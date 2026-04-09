@@ -1,0 +1,9 @@
+services:
+  zxly-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zxly-web
+    ports:
+      - "8085:80"
+    restart: unless-stopped
