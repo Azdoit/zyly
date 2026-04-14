@@ -257,18 +257,9 @@ function ConsultScreen() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-xs">
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>睡眠相关</div>
-                    <div className="mt-1">12 项</div>
-                  </div>
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>体质相关</div>
-                    <div className="mt-1">18 项</div>
-                  </div>
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>脏腑相关</div>
-                    <div className="mt-1">9 项</div>
-                  </div>
+                  <div className="rounded-2xl border p-3 text-center">睡眠相关 12 项</div>
+                  <div className="rounded-2xl border p-3 text-center">体质相关 18 项</div>
+                  <div className="rounded-2xl border p-3 text-center">脏腑相关 9 项</div>
                 </div>
               </CardContent>
             </Card>
@@ -711,14 +702,14 @@ function TherapyScreen({ prefill, clearPrefill }) {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`${iconChip} shrink-0 self-start`}>
+                    <div className="flex gap-3">
+                      <div className={iconChip}>
                         <Building2 className="h-5 w-5" />
                       </div>
                       <div>
                         <div className="text-sm font-medium">{item.name}</div>
-                        <div className="text-xs text-muted-foreground mt-2 flex items-start gap-1">
-                          <MapPin className="h-3 w-3 shrink-0 mt-1" />
+                        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
                           {item.desc}
                         </div>
                         <div className="flex flex-wrap gap-2 mt-3">
