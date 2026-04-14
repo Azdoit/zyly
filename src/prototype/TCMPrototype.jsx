@@ -456,16 +456,16 @@ function PlanScreen({ goToTherapyWithProject }) {
         </Card>
 
         <Tabs defaultValue="today" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-2 rounded-2xl">
             <TabsTrigger value="today" className="rounded-2xl">
               今日方案
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-2xl">
               历史方案
             </TabsTrigger>
-            <TabsTrigger value="logic" className="rounded-2xl">
+            {/* <TabsTrigger value="logic" className="rounded-2xl">
               调整依据
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="today" className="space-y-4 mt-0">
@@ -781,7 +781,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   {/* <div className="rounded-2xl border p-3">授权对象：{selectedInstitutionInfo.name}</div> */}
-                  <div className="rounded-2xl border p-3">授权内容：问诊摘要 / 方案方向</div>
+                  {/* <div className="rounded-2xl border p-3">授权内容：问诊摘要 / 方案方向</div> */}
                 </div>
 
                 <div className="flex gap-3">
