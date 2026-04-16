@@ -36,6 +36,14 @@ const statusBadgeClass =
   'rounded-full whitespace-nowrap px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200';
 const fieldBadgeClass =
   'rounded-full whitespace-nowrap px-3 py-1 bg-white text-slate-600 border border-slate-200';
+const badgeDoneClass =
+  'rounded-full whitespace-nowrap px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200';
+const badgePendingClass =
+  'rounded-full whitespace-nowrap px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200';
+const badgeSelectedClass =
+  'rounded-full whitespace-nowrap px-3 py-1 bg-slate-900 text-white border border-slate-900';
+const badgeIdleClass =
+  'rounded-full whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200';
 
 const appTabs = [
   { key: 'consult', label: '问诊', icon: ClipboardList },
@@ -108,7 +116,24 @@ function IntroCard({ title, desc, badge }) {
 
 function ConsultScreen() {
   const [consultTab, setConsultTab] = useState('overview');
-  const [prediagnosisComplete, setPrediagnosisComplete] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(true);
+  const [profileData] = useState({
+    gender: '女',
+    age: '32',
+    bmi: '20.9',
+    history: '无重大既往病史',
+    allergy: '无',
+  });
+
+  const [visitData, setVisitData] = useState({
+    chiefComplaint: '胃胀、睡眠浅、易疲劳',
+    presentIllness: '近两周工作压力增大后加重，伴随入睡困难与白天乏力',
+  });
+  const visitComplete = Boolean(
+    visitData.chiefComplaint.trim() && visitData.presentIllness.trim()
+  );
+
+  const [bagangComplete, setBagangComplete] = useState(false);
   const [tongueCaptureComplete, setTongueCaptureComplete] = useState(false);
   const [fingerDoctorDataReady] = useState(true);
   const [showSyndromeResult, setShowSyndromeResult] = useState(false);
@@ -126,71 +151,115 @@ function ConsultScreen() {
 
   const optionChip = 'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-600';
   const canRunSyndromeAnalysis =
-    prediagnosisComplete && tongueCaptureComplete && fingerDoctorDataReady;
+    profileComplete && visitComplete && bagangComplete && tongueCaptureComplete && fingerDoctorDataReady;
+
+  const getPrimaryAction = () => {
+    if (!profileComplete) return { label: '先完善个人档案', action: () => setConsultTab('profile') };
+    if (!visitComplete) return { label: '继续本次问诊', action: () => setConsultTab('visit') };
+    if (!bagangComplete) return { label: '继续八纲问诊', action: () => setConsultTab('bagang') };
+    if (!tongueCaptureComplete) return { label: '去采集舌象', action: () => setConsultTab('overview') };
+    return {
+      label: '开始AI辨证',
+      action: () => {
+        setConsultTab('overview');
+        setShowSyndromeResult(true);
+      },
+    };
+  };
+
+  const primaryAction = getPrimaryAction();
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
       <MiniTopBar title="问诊" subtitle="采集与辩证" />
       <div className="p-4 space-y-4">
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1">
-          <button
-            onClick={() => setConsultTab('overview')}
-            className={`rounded-2xl px-3 py-2 text-sm font-medium ${
-              consultTab === 'overview' ? 'bg-white shadow-sm' : 'text-slate-500'
-            }`}
-          >
-            问诊首页
-          </button>
-          <button
-            onClick={() => setConsultTab('form')}
-            className={`rounded-2xl px-3 py-2 text-sm font-medium ${
-              consultTab === 'form' ? 'bg-white shadow-sm' : 'text-slate-500'
-            }`}
-          >
-            问诊单填写
-          </button>
+        <div className="grid grid-cols-4 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
+          {[
+            ['overview', '首页'],
+            ['profile', '档案'],
+            ['visit', '本次'],
+            ['bagang', '八纲'],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setConsultTab(key)}
+              className={`rounded-2xl px-2 py-2 font-medium ${consultTab === key ? 'bg-white shadow-sm' : 'text-slate-500'}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {consultTab === 'overview' && (
           <>
-            <IntroCard title="填写问卷、上传舌象" desc="完成后生成辨证结果" badge="核心" />
+            <IntroCard title="本次问诊" badge="核心" />
 
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">预诊问卷</CardTitle>
+                <CardTitle className="text-base">个人档案</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium">当前进度</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {prediagnosisComplete ? '4 步内容已完成，可进入 AI 综合辩证' : '共 4 步，已完成 3 步'}
-                    </div>
+                    <div className="text-sm font-medium">基础信息</div>
                   </div>
-                  <Badge variant="secondary" className={statusBadgeClass}>
-                    {prediagnosisComplete ? '已完成' : '进行中'}
+                  <Badge variant="secondary" className={profileComplete ? badgeDoneClass : badgePendingClass}>
+                    {profileComplete ? '已完成' : '待完善'}
                   </Badge>
                 </div>
-                <Progress value={prediagnosisComplete ? 100 : 75} />
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-2xl border p-4">
-                    <div className="font-medium">主诉症状</div>
-                    <div className="text-xs text-muted-foreground mt-2">胃胀、睡眠浅、易疲劳</div>
+                    <div className="font-medium">基础资料</div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      {profileData.gender} · {profileData.age}岁 · BMI {profileData.bmi}
+                    </div>
                   </div>
                   <div className="rounded-2xl border p-4">
-                    <div className="font-medium">生活习惯</div>
-                    <div className="text-xs text-muted-foreground mt-2">晚睡、久坐、饮食不规律</div>
+                    <div className="font-medium">健康档案</div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      既往病史：{profileData.history}；过敏史：{profileData.allergy}
+                    </div>
                   </div>
                 </div>
-                <Button
-                  className="w-full rounded-2xl"
-                  onClick={() => {
-                    setPrediagnosisComplete(true);
-                    setShowSyndromeResult(false);
-                  }}
-                >
-                  继续填写预诊
+                <Button variant="outline" className="w-full rounded-2xl" onClick={() => setConsultTab('profile')}>
+                  查看档案
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card className={sectionCard}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">本次问诊</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-2xl border p-4 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">主诉</div>
+                      <Badge variant="secondary" className={visitComplete ? badgeDoneClass : badgePendingClass}>
+                        {visitComplete ? '已完成' : '待填写'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2 leading-5">{visitData.chiefComplaint || '待填写'}</div>
+                  </div>
+                  <div className="rounded-2xl border p-4 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">八纲</div>
+                      <Badge variant="secondary" className={bagangComplete ? badgeDoneClass : badgePendingClass}>
+                        {bagangComplete ? '已完成' : '待填写'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">8 项</div>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button className="flex-1 rounded-2xl" onClick={() => setConsultTab('visit')}>
+                    填写主诉
+                  </Button>
+                  <Button className="flex-1 rounded-2xl" onClick={() => setConsultTab('bagang')}>
+                    填写八纲
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -201,31 +270,25 @@ function ConsultScreen() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium">采集状态</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {tongueCaptureComplete ? '舌象已上传，可用于综合辩证' : '请在自然光下拍照或上传清晰舌象'}
+                      {tongueCaptureComplete ? '已上传' : '请拍摄清晰舌象'}
                     </div>
                   </div>
-                  <Badge variant="secondary" className={statusBadgeClass}>
-                    {tongueCaptureComplete ? '已完成' : '待采集'}
+                  <Badge variant="secondary" className={tongueCaptureComplete ? badgeDoneClass : badgePendingClass}>
+                    {tongueCaptureComplete ? '已完成' : '待上传'}
                   </Badge>
                 </div>
-
-                <div className="rounded-2xl border-2 border-dashed p-6 text-center bg-slate-50">
-                  <div className="text-sm font-medium">拍照 / 上传舌象</div>
-                  <div className="text-xs text-muted-foreground mt-2">自然光下拍摄</div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full rounded-2xl"
+                <button
+                  type="button"
+                  className="w-full rounded-2xl border-2 border-dashed p-6 text-center bg-slate-50"
                   onClick={() => {
                     setTongueCaptureComplete(true);
                     setShowSyndromeResult(false);
                   }}
                 >
-                  完成舌象采集
-                </Button>
+                  <div className="text-sm font-medium">拍照或上传</div>
+                  <div className="text-xs text-muted-foreground mt-2">自然光拍摄更清晰</div>
+                </button>
               </CardContent>
             </Card>
 
@@ -235,59 +298,32 @@ function ConsultScreen() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      由设备检测结果自动同步，无需手动填写
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className={statusBadgeClass}>
-                    {fingerDoctorDataReady ? '已同步' : '待同步'}
+                  <div />
+                  <Badge variant="secondary" className={fingerDoctorDataReady ? badgeDoneClass : badgePendingClass}>
+                    {fingerDoctorDataReady ? '已完成' : '待同步'}
                   </Badge>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="rounded-2xl border p-3 bg-white">
-                    <div className="text-slate-500">最近同步时间</div>
+                    <div className="text-slate-500">最近同步</div>
                     <div className="mt-2 text-sm font-medium text-slate-900">2026/04/14 10:32</div>
                   </div>
                   <div className="rounded-2xl border p-3 bg-white">
-                    <div className="text-slate-500">数据来源</div>
+                    <div className="text-slate-500">来源</div>
                     <div className="mt-2 text-sm font-medium text-slate-900">手指医生设备</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 text-xs">
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>睡眠相关</div>
-                    <div className="mt-1">12 项</div>
-                  </div>
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>体质相关</div>
-                    <div className="mt-1">18 项</div>
-                  </div>
-                  <div className="rounded-2xl border p-3 text-center">
-                    <div>脏腑相关</div>
-                    <div className="mt-1">9 项</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Button
-              className="w-full rounded-2xl"
-              disabled={!canRunSyndromeAnalysis}
-              onClick={() => {
-                setConsultTab('overview');
-                setShowSyndromeResult(true);
-              }}
-            >
-              AI综合辩证
+            <Button className="w-full rounded-2xl" disabled={!profileComplete && !visitComplete} onClick={primaryAction.action}>
+              {primaryAction.label}
             </Button>
 
-            {showSyndromeResult && (
+            {showSyndromeResult && canRunSyndromeAnalysis && (
               <Card className={sectionCard}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">本次辨证结果</CardTitle>
+                  <CardTitle className="text-base">辨证结果</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="rounded-2xl bg-amber-50 border p-4 text-sm leading-6">
@@ -305,14 +341,90 @@ function ConsultScreen() {
           </>
         )}
 
-        {consultTab === 'form' && (
+        {consultTab === 'profile' && (
           <>
-            <IntroCard
-              title="八大维度问诊单"
-              desc="寒热、汗出、头身、胸腹、饮食、二便、睡眠、精神"
-              badge="填写"
-            />
+            <IntroCard title="个人档案" desc="长期信息，低频维护" badge="档案" />
+            <Card className={sectionCard}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">基础资料</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-3 text-sm">
+                {[
+                  ['性别', profileData.gender],
+                  ['年龄', `${profileData.age}岁`],
+                  ['BMI', profileData.bmi],
+                  ['过敏史', profileData.allergy],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-2xl border p-4 bg-white">
+                    <div className="text-xs text-muted-foreground">{label}</div>
+                    <div className="mt-2 font-medium">{value}</div>
+                  </div>
+                ))}
+                <div className="rounded-2xl border p-4 bg-white col-span-2">
+                  <div className="text-xs text-muted-foreground">既往病史</div>
+                  <div className="mt-2 font-medium">{profileData.history}</div>
+                </div>
+              </CardContent>
+            </Card>
+            <Button className="w-full rounded-2xl" onClick={() => { setProfileComplete(true); setConsultTab('visit'); }}>
+              保存并继续
+            </Button>
+          </>
+        )}
 
+        {consultTab === 'visit' && (
+          <>
+            <IntroCard title="本次问诊" desc="记录本次症状变化" badge="本次" />
+            <Card className={sectionCard}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">问诊信息</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-2xl border p-4 bg-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-medium">主诉</div>
+                    <Badge variant="secondary" className={visitData.chiefComplaint ? badgeDoneClass : badgePendingClass}>
+                      {visitData.chiefComplaint ? '已完成' : '待填写'}
+                    </Badge>
+                  </div>
+                  <textarea
+                    className="mt-3 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
+                    rows={3}
+                    placeholder="例如：胃胀、乏力、睡眠差"
+                    value={visitData.chiefComplaint}
+                    onChange={(e) => setVisitData((prev) => ({ ...prev, chiefComplaint: e.target.value }))}
+                  />
+                </div>
+                <div className="rounded-2xl border p-4 bg-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-medium">现病史</div>
+                    <Badge variant="secondary" className={visitData.presentIllness ? badgeDoneClass : badgePendingClass}>
+                      {visitData.presentIllness ? '已完成' : '待填写'}
+                    </Badge>
+                  </div>
+                  <textarea
+                    className="mt-3 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
+                    rows={4}
+                    placeholder="例如：近两周加重，夜间难入睡，白天疲劳明显"
+                    value={visitData.presentIllness}
+                    onChange={(e) => setVisitData((prev) => ({ ...prev, presentIllness: e.target.value }))}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            <Button
+              className="w-full rounded-2xl"
+              disabled={!visitComplete}
+              onClick={() => { setConsultTab('bagang'); }}
+            >
+              保存并继续
+            </Button>
+          </>
+        )}
+
+        {consultTab === 'bagang' && (
+          <>
+            <IntroCard title="八纲前置辩证" desc="8 个维度" badge="填写" />
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">问诊进度</CardTitle>
@@ -320,20 +432,15 @@ function ConsultScreen() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium">当前进度</div>
-                    <div className="text-xs text-muted-foreground mt-1">共 8 个维度，已完成 2 个</div>
+                    <div className="text-sm font-medium">填写进度</div>
+                    <div className="text-xs text-muted-foreground mt-1">共 8 项，已完成 2 项</div>
                   </div>
-                  <Badge variant="secondary" className={statusBadgeClass}>
-                    进行中
-                  </Badge>
+                  <Badge variant="secondary" className={badgePendingClass}>进行中</Badge>
                 </div>
                 <Progress value={25} />
                 <div className="grid grid-cols-4 gap-2 text-center text-[11px]">
                   {sectionStats.map(([name, count], idx) => (
-                    <div
-                      key={name}
-                      className={`rounded-2xl border p-3 ${idx < 2 ? 'bg-slate-100' : 'bg-white'}`}
-                    >
+                    <div key={name} className={`rounded-2xl border p-3 ${idx < 2 ? 'bg-slate-100' : 'bg-white'}`}>
                       <div className="font-medium">{name}</div>
                       <div className="text-muted-foreground mt-1">{count}</div>
                     </div>
@@ -341,21 +448,18 @@ function ConsultScreen() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">当前章节：寒热问诊</CardTitle>
+                <CardTitle className="text-base">当前：寒热问诊</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-2xl border p-4 bg-white">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-medium">H_001 恶寒情况</div>
-                      <div className="text-xs text-muted-foreground mt-1">请选择最符合当前状态的一项</div>
+                      <div className="text-xs text-muted-foreground mt-1">请选择一项</div>
                     </div>
-                    <Badge variant="secondary" className={fieldBadgeClass}>
-                      单选
-                    </Badge>
+                    <Badge variant="secondary" className={fieldBadgeClass}>单选</Badge>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <div className={optionChip}>无恶寒</div>
@@ -364,16 +468,13 @@ function ConsultScreen() {
                     <div className={optionChip}>恶寒重剧</div>
                   </div>
                 </div>
-
                 <div className="rounded-2xl border p-4 bg-white">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-medium">H_003 发热情况</div>
-                      <div className="text-xs text-muted-foreground mt-1">可用于判断寒热偏性与热势强弱</div>
+                      <div className="text-xs text-muted-foreground mt-1">用于判断寒热偏性</div>
                     </div>
-                    <Badge variant="secondary" className={fieldBadgeClass}>
-                      单选
-                    </Badge>
+                    <Badge variant="secondary" className={fieldBadgeClass}>单选</Badge>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <div className={optionChip}>无发热</div>
@@ -383,18 +484,13 @@ function ConsultScreen() {
                     <div className={optionChip}>潮热</div>
                   </div>
                 </div>
-
                 <div className="rounded-2xl border p-4 bg-white">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-medium">H_005 恶寒与发热关系</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        用于辨别表里、寒热并见等情况
-                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">用于判断寒热关系</div>
                     </div>
-                    <Badge variant="secondary" className={fieldBadgeClass}>
-                      单选
-                    </Badge>
+                    <Badge variant="secondary" className={fieldBadgeClass}>单选</Badge>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <div className={optionChip}>恶寒发热并见</div>
@@ -405,16 +501,8 @@ function ConsultScreen() {
                 </div>
               </CardContent>
             </Card>
-
-            <Button
-              className="w-full rounded-2xl"
-              onClick={() => {
-                setPrediagnosisComplete(true);
-                setConsultTab('overview');
-                setShowSyndromeResult(false);
-              }}
-            >
-              保存并继续下一章节
+            <Button className="w-full rounded-2xl" onClick={() => { setBagangComplete(true); setConsultTab('overview'); setShowSyndromeResult(false); }}>
+              完成本次问诊
             </Button>
           </>
         )}
@@ -424,226 +512,214 @@ function ConsultScreen() {
 }
 
 function PlanScreen({ goToTherapyWithProject }) {
-  const todayPlan = [
-    ['饮食调理', '早餐温热清淡，减少生冷；晚餐建议提前并控制油腻摄入'],
-    ['作息建议', '建议 23:00 前入睡，晚间减少高强度用脑与情绪刺激'],
-    ['理疗方向', '优先考虑助眠舒缓与健脾和中方向，不直接在本页做机构选择'],
+  const [expanded, setExpanded] = useState(false);
+
+  const syndromeResult = {
+    title: '肝郁脾虚、湿困中焦',
+    summary: '以睡眠浅、胃胀、疲劳感重为主要表现',
+    detail:
+      '综合本次问诊信息与舌象特征，判断当前以肝郁脾虚为主，兼有湿困中焦。长期情绪压力导致气机不畅，影响脾胃运化功能，进而出现胃胀、疲劳、睡眠质量下降等表现。建议以疏肝理气、健脾祛湿为主要调理方向，并结合外治疗法与日常功法进行综合干预。',
+    tags: ['睡眠', '脾胃', '情绪'],
+  };
+
+  const planBuckets = [
+    { key: 'internal', title: '内服', desc: '疏肝健脾调理', sample: '健脾祛湿方', action: '去查看' },
+    { key: 'external', title: '外治', desc: '艾灸+推拿', sample: '助眠舒缓理疗', action: '去预约' },
+    { key: 'exercise', title: '功法', desc: '日常调养', sample: '八段锦 · 第1式', action: '开始练习' },
   ];
 
   const historyPlans = [
-    ['2026/04/08', '初始辨证方案', '以疏肝理气、改善睡眠为主'],
-    ['2026/04/06', '历史调理记录', '以缓解疲劳、调节脾胃为主'],
-    ['2026/03/28', '上次问诊方案', '以情绪舒缓与作息修复为主'],
+    ['2026/04/08', '初始辨证方案', '以内服、外治、功法联合调理为主'],
+    ['2026/04/06', '历史调理记录', '以健脾调理与助眠外治为主'],
   ];
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar title="方案" subtitle="今日方案与历史记录" />
+      <MiniTopBar title="方案" subtitle="AI辩证分析与疗养方案" />
       <div className="p-4 space-y-4">
-        <IntroCard title="查看今日方案" desc="支持回看历史" badge="方案" />
+        <IntroCard title="今日调理方案" desc="基于本次辨证结果生成" badge="今日" />
 
-        <Card className="rounded-3xl border-0 bg-gradient-to-br from-emerald-50 to-cyan-50 shadow-sm">
-          <CardContent className="p-5">
-            <div className="text-base font-semibold">今日方案摘要</div>
-            <div className="mt-2 text-sm text-muted-foreground">疏肝理气 · 健脾和中 · 睡眠修复</div>
-            <Button
-              className="w-full rounded-2xl mt-4"
-              onClick={() => goToTherapyWithProject('sleep')}
-            >
-              去承接理疗
-            </Button>
+        <Card className={sectionCard}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">本次辨证结果</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="rounded-2xl bg-amber-50 border p-4 text-sm leading-6">
+              <div className="font-semibold">{syndromeResult.title}</div>
+              <div className="text-xs text-muted-foreground mt-2">{syndromeResult.summary}</div>
+              <div className={`text-xs text-slate-600 mt-3 leading-5 transition-all ${expanded ? '' : 'line-clamp-2'}`}>
+                {syndromeResult.detail}
+              </div>
+              <button className="text-xs text-slate-500 mt-2" onClick={() => setExpanded(!expanded)}>
+                {expanded ? '收起' : '展开'}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {syndromeResult.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className={badgeIdleClass}>{tag}</Badge>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="today" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 rounded-2xl">
-            <TabsTrigger value="today" className="rounded-2xl">
-              今日方案
-            </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-2xl">
-              历史方案
-            </TabsTrigger>
-            {/* <TabsTrigger value="logic" className="rounded-2xl">
-              调整依据
-            </TabsTrigger> */}
-          </TabsList>
-
-          <TabsContent value="today" className="space-y-4 mt-0">
-            <Card className={sectionCard}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">今日个性化方案</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {todayPlan.map(([name, desc]) => (
-                  <div key={name} className="rounded-2xl border p-4">
-                    <div className="text-sm font-medium">{name}</div>
-                    <div className="text-xs text-muted-foreground mt-2 leading-5">{desc}</div>
+        <Card className={sectionCard}>
+          <CardContent className="p-5">
+            <div className="text-base font-semibold">今日调理方案</div>
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              {planBuckets.map((item) => (
+                <div key={item.key} className="rounded-2xl bg-white border p-3 flex flex-col justify-between h-[140px]">
+                  <div>
+                    <div className="text-sm font-medium">{item.title}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{item.desc}</div>
+                    <div className="text-xs mt-2 font-medium text-slate-800 line-clamp-1">{item.sample}</div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  <Button size="sm" className="w-full rounded-xl mt-2" onClick={() => { if (item.key === 'external') goToTherapyWithProject('sleep'); }}>
+                    {item.action}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card className={sectionCard}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">今日反馈样例</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-3 gap-3 text-xs">
-                <div className="rounded-2xl border p-3 text-center">睡眠 3/5</div>
-                <div className="rounded-2xl border p-3 text-center">体感 4/5</div>
-                <div className="rounded-2xl border p-3 text-center">胃胀 ↓</div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="history" className="space-y-4 mt-0">
-            <Card className={sectionCard}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">历史方案记录</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {historyPlans.map(([date, title, desc]) => (
-                  <div key={date + title} className="rounded-2xl border p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-medium">{title}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{date}</div>
-                      </div>
-                      <Button size="sm" variant="outline" className="rounded-xl">
-                        查看当日详情
-                      </Button>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-3 leading-5">{desc}</div>
+        <Card className={sectionCard}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">历史方案</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {historyPlans.map(([date, title, desc]) => (
+              <div key={date + title} className="rounded-2xl border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium">{title}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{date}</div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="logic" className="space-y-4 mt-0">
-            <Card className={sectionCard}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">方案调整依据</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {[
-                  '根据每日反馈，对睡眠、情绪、脾胃状态进行动态调整',
-                  '不同日期的方案会保留，方便查看变化轨迹与调理过程',
-                  '后续可与历史问诊、历史舌象、历史理疗记录联动查看',
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl border p-3 bg-slate-50">
-                    {item}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  <Button size="sm" variant="outline" className="rounded-xl">查看</Button>
+                </div>
+                <div className="text-xs text-muted-foreground mt-3 leading-5">{desc}</div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
 
 function TherapyScreen({ prefill, clearPrefill }) {
+  const dateOptions = useMemo(() => {
+    const weekdayMap = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const labelMap = ['今天', '明天', '后天'];
+    return Array.from({ length: 5 }).map((_, idx) => {
+      const d = new Date();
+      d.setDate(d.getDate() + idx);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return {
+        label: labelMap[idx] || `${mm}/${dd}`,
+        sub: `${mm}/${dd} ${weekdayMap[d.getDay()]}`,
+      };
+    });
+  }, []);
+
   const therapyProjects = [
-    {
-      id: 'sleep',
-      name: '助眠舒缓项目',
-      desc: '适合睡眠浅、夜醒频繁、压力偏大时选择',
-    },
-    {
-      id: 'spleen',
-      name: '健脾和中理疗',
-      desc: '适合胃胀、疲劳感重、饮食不规律时选择',
-    },
-    {
-      id: 'mood',
-      name: '情绪舒缓调理',
-      desc: '适合情绪紧张、胸闷不舒时选择',
-    },
+    { id: 'sleep', name: '助眠舒缓项目', desc: '适合睡眠浅、夜醒频繁、压力偏大时选择' },
+    { id: 'spleen', name: '健脾和中理疗', desc: '适合胃胀、疲劳感重、饮食不规律时选择' },
+    { id: 'mood', name: '情绪舒缓调理', desc: '适合情绪紧张、胸闷不舒时选择' },
   ];
 
   const therapyInstitutions = [
-    {
-      id: 'hotel',
-      name: 'XX康养酒店理疗中心',
-      desc: '距离 280m · 可承接助眠舒缓 / 经络理疗',
-      tags: ['助眠舒缓', '经络理疗'],
-    },
-    {
-      id: 'herb',
-      name: '本草养生馆',
-      desc: '距离 1.2km · 可承接脾胃调理 / 情绪舒缓',
-      tags: ['健脾和中', '情绪舒缓'],
-    },
+    { id: 'hotel', name: 'XX康养酒店理疗中心', desc: '距离 280m · 可承接助眠舒缓 / 经络理疗', tags: ['助眠舒缓', '经络理疗'] },
+    { id: 'herb', name: '本草养生馆', desc: '距离 1.2km · 可承接脾胃调理 / 情绪舒缓', tags: ['健脾和中', '情绪舒缓'] },
   ];
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedInstitution, setSelectedInstitution] = useState(null);
   const [authorizedInstitution, setAuthorizedInstitution] = useState(null);
-  const [appointmentCreated, setAppointmentCreated] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState('14:00');
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
+  const [appointments, setAppointments] = useState([
+    {
+      id: 'a1',
+      institution: 'XX康养酒店理疗中心',
+      project: '助眠舒缓项目',
+      time: '今天 04/15 周三 14:00',
+      status: 'pending',
+    },
+    {
+      id: 'a2',
+      institution: '本草养生馆',
+      project: '健脾和中理疗',
+      time: '2026/04/10 15:00',
+      status: 'accepted',
+    },
+    {
+      id: 'a3',
+      institution: '本草养生馆',
+      project: '情绪舒缓调理',
+      time: '2026/04/08 14:30',
+      status: 'cancelled',
+    },
+  ]);
 
   useEffect(() => {
     if (prefill?.projectId) {
       setSelectedProject(prefill.projectId);
       setSelectedInstitution(null);
       setAuthorizedInstitution(null);
-      setAppointmentCreated(false);
+      setSelectedDate('');
+      setSelectedSlot('14:00');
+      setShowTimePicker(false);
+      setShowBookingSheet(false);
+      setShowAuthorizeDialog(false);
       if (clearPrefill) clearPrefill();
     }
   }, [prefill, clearPrefill]);
 
+  useEffect(() => {
+    if (!selectedDate && dateOptions.length > 0) {
+      setSelectedDate(`${dateOptions[0].label} ${dateOptions[0].sub}`);
+    }
+  }, [selectedDate, dateOptions]);
+
   const selectedProjectInfo = therapyProjects.find((item) => item.id === selectedProject);
   const selectedInstitutionInfo = therapyInstitutions.find((item) => item.id === selectedInstitution);
-  const authorizedInstitutionInfo = therapyInstitutions.find((item) => item.id === authorizedInstitution);
+  const selectedTime = selectedDate && selectedSlot ? `${selectedDate} ${selectedSlot}` : '';
+  const latestAppointment = appointments[0] || null;
+  const historyAppointments = appointments.slice(1);
+  const [appointmentTab, setAppointmentTab] = useState('latest');
+  const isAuthorized = authorizedInstitution === selectedInstitution;
+  const canReserve = !!selectedProject && !!selectedInstitution && isAuthorized && !!selectedTime;
 
-  const canAuthorize = !!selectedInstitution;
-  const canReserve = !!selectedProject && !!authorizedInstitution;
+  const handleCancelAppointment = (id) => {
+    setAppointments((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: 'cancelled' } : item))
+    );
+  };
+
+  const handleSubmitAppointment = () => {
+    if (!canReserve || !selectedInstitutionInfo || !selectedProjectInfo) return;
+    setAppointments((prev) => [
+      {
+        id: `a${Date.now()}`,
+        institution: selectedInstitutionInfo.name,
+        project: selectedProjectInfo.name,
+        time: selectedTime,
+        status: 'pending',
+      },
+      ...prev,
+    ]);
+    setShowBookingSheet(false);
+  };
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
       <MiniTopBar title="理疗" subtitle="项目、机构、授权与预约" />
       <div className="p-4 space-y-4">
         <IntroCard title="项目 ➡️ 机构 ➡️ 授权" desc="授权后即可预约线下养生服务" badge="理疗" />
-
-        <Card className={sectionCard}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">当前承接进度</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-4 gap-2 text-center text-[11px]">
-              {[
-                ['选择项目', selectedProject ? '已完成' : '待完成'],
-                ['选择机构', selectedInstitution ? '已完成' : '待完成'],
-                ['完成授权', authorizedInstitution ? '已完成' : '待完成'],
-                ['提交预约', appointmentCreated ? '已完成' : '待完成'],
-              ].map(([name, status]) => (
-                <div
-                  key={name}
-                  className={`rounded-2xl border p-3 ${
-                    status === '已完成' ? 'bg-slate-100' : 'bg-white'
-                  }`}
-                >
-                  <div className="font-medium">{name}</div>
-                  <div className="text-muted-foreground mt-1">{status}</div>
-                </div>
-              ))}
-            </div>
-
-            <Progress
-              value={
-                appointmentCreated
-                  ? 100
-                  : authorizedInstitution
-                    ? 75
-                    : selectedInstitution
-                      ? 50
-                      : selectedProject
-                        ? 25
-                        : 0
-              }
-            />
-          </CardContent>
-        </Card>
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
@@ -656,13 +732,8 @@ function TherapyScreen({ prefill, clearPrefill }) {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => {
-                    setSelectedProject(item.id);
-                    setAppointmentCreated(false);
-                  }}
-                  className={`w-full text-left flex items-start gap-3 rounded-2xl border p-4 transition ${
-                    active ? 'border-slate-900 bg-slate-50' : 'bg-white'
-                  }`}
+                  onClick={() => setSelectedProject(item.id)}
+                  className={`w-full text-left flex items-start gap-3 rounded-2xl border p-4 transition ${active ? 'border-slate-900 bg-slate-50' : 'bg-white'}`}
                 >
                   <div className={iconChip}>
                     <HeartPulse className="h-5 w-5" />
@@ -670,8 +741,8 @@ function TherapyScreen({ prefill, clearPrefill }) {
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-medium">{item.name}</div>
-                      <Badge variant="secondary" className={active ? fieldBadgeClass : infoBadgeClass}>
-                        {active ? '已选中' : '可选择'}
+                      <Badge variant="secondary" className={active ? badgeSelectedClass : badgeIdleClass}>
+                        {active ? '已选择' : '待选择'}
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-2 leading-5">{item.desc}</div>
@@ -687,12 +758,6 @@ function TherapyScreen({ prefill, clearPrefill }) {
             <CardTitle className="text-base">附近理疗机构</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {!selectedProject && (
-              <div className="rounded-2xl border p-4 bg-slate-50 text-sm text-slate-600">
-                请先选择理疗项目，查看适合的承接机构。
-              </div>
-            )}
-
             {therapyInstitutions.map((item) => {
               const active = selectedInstitution === item.id;
               return (
@@ -701,14 +766,12 @@ function TherapyScreen({ prefill, clearPrefill }) {
                   type="button"
                   onClick={() => {
                     setSelectedInstitution(item.id);
-                    setAppointmentCreated(false);
                     if (authorizedInstitution && authorizedInstitution !== item.id) {
                       setAuthorizedInstitution(null);
                     }
+                    setShowBookingSheet(true);
                   }}
-                  className={`w-full text-left rounded-2xl border p-4 transition ${
-                    active ? 'border-slate-900 bg-slate-50' : 'bg-white'
-                  }`}
+                  className={`w-full text-left rounded-2xl border p-4 transition ${active ? 'border-slate-900 bg-slate-50' : 'bg-white'}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
@@ -723,19 +786,15 @@ function TherapyScreen({ prefill, clearPrefill }) {
                         </div>
                         <div className="flex flex-wrap gap-2 mt-3">
                           {item.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] text-slate-600"
-                            >
+                            <span key={tag} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] text-slate-600">
                               {tag}
                             </span>
                           ))}
                         </div>
                       </div>
                     </div>
-
-                    <Badge variant="secondary" className={active ? fieldBadgeClass : infoBadgeClass}>
-                      {active ? '已选中' : '选择机构'}
+                    <Badge variant="secondary" className={active ? badgeSelectedClass : badgeIdleClass}>
+                      {active ? '已选择' : '待选择'}
                     </Badge>
                   </div>
                 </button>
@@ -746,232 +805,520 @@ function TherapyScreen({ prefill, clearPrefill }) {
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">数据授权</CardTitle>
+            <CardTitle className="text-base">我的预约</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {!selectedInstitution && (
-              <div className="rounded-2xl border p-4 bg-slate-50">
-                <div className="text-sm font-medium">当前未选择承接机构</div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  请选择机构后，再授权对方查看你的问诊摘要与方案方向。
-                </div>
-              </div>
-            )}
-
-            {selectedInstitutionInfo && (
-              <>
-                <div className="flex items-start gap-3 rounded-2xl border p-4 bg-slate-50">
-                  <div className={iconChip}>
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">
-                      {authorizedInstitution === selectedInstitution
-                        ? `已授权给 ${selectedInstitutionInfo.name}`
-                        : `待授权给 ${selectedInstitutionInfo.name}`}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      授权后，机构可查看你的问诊摘要、方案方向，用于到店承接理疗服务。
-                    </div>
-                  </div>
-                  <Badge variant="secondary">
-                    {authorizedInstitution === selectedInstitution ? '已授权' : '未授权'}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  {/* <div className="rounded-2xl border p-3">授权对象：{selectedInstitutionInfo.name}</div> */}
-                  {/* <div className="rounded-2xl border p-3">授权内容：问诊摘要 / 方案方向</div> */}
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    className="flex-1 rounded-2xl"
-                    disabled={!canAuthorize}
-                    onClick={() => {
-                      setAuthorizedInstitution(selectedInstitution);
-                      setAppointmentCreated(false);
-                    }}
-                  >
-                    {authorizedInstitution === selectedInstitution ? '更新授权' : '确认授权'}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex-1 rounded-2xl"
-                    onClick={() => {
-                      setAuthorizedInstitution(null);
-                      setAppointmentCreated(false);
-                    }}
-                  >
-                    撤回授权
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className={sectionCard}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">预约确认</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-2xl border p-4 bg-slate-50">
-              <div className="text-sm font-medium">预约摘要</div>
-              <div className="grid grid-cols-1 gap-2 mt-3 text-xs text-muted-foreground">
-                <div>理疗项目：{selectedProjectInfo ? selectedProjectInfo.name : '暂未选择'}</div>
-                <div>承接机构：{selectedInstitutionInfo ? selectedInstitutionInfo.name : '暂未选择'}</div>
-                <div>
-                  授权状态：
-                  {authorizedInstitution && selectedInstitutionInfo && authorizedInstitution === selectedInstitution
-                    ? ' 已授权'
-                    : ' 未授权'}
-                </div>
-                <div>预约时间：到店后确认 / 后续可扩展时间选择</div>
-              </div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
+              {[
+                ['latest', '最近预约'],
+                ['history', '历史预约'],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setAppointmentTab(key)}
+                  className={`rounded-2xl px-2 py-2 font-medium ${appointmentTab === key ? 'bg-white shadow-sm' : 'text-slate-500'}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
-            <Button
-              className="w-full rounded-2xl"
-              disabled={!canReserve}
-              onClick={() => setAppointmentCreated(true)}
-            >
-              提交预约
-            </Button>
+            {appointmentTab === 'latest' && (
+              <div>
+                {latestAppointment ? (
+                  <div className="rounded-2xl border bg-white p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium">{latestAppointment.institution}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{latestAppointment.project}</div>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          latestAppointment.status === 'accepted'
+                            ? badgeDoneClass
+                            : latestAppointment.status === 'cancelled'
+                              ? badgeIdleClass
+                              : badgePendingClass
+                        }
+                      >
+                        {latestAppointment.status === 'accepted' ? '已接单' : latestAppointment.status === 'cancelled' ? '已取消' : '待确认'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-3">预约时间：{latestAppointment.time}</div>
+                    {latestAppointment.status === 'pending' && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl mt-3"
+                        onClick={() => handleCancelAppointment(latestAppointment.id)}
+                      >
+                        取消预约
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border bg-white p-4 text-xs text-muted-foreground">暂无预约记录</div>
+                )}
+              </div>
+            )}
 
-            {appointmentCreated && (
-              <div className="rounded-2xl border p-4 bg-white">
-                <div className="text-sm font-medium">预约已提交</div>
-                <div className="text-xs text-muted-foreground mt-2 leading-5">
-                  已向 {authorizedInstitutionInfo?.name} 提交承接预约，后续可在此查看预约详情、到店状态与服务记录。
-                </div>
+            {appointmentTab === 'history' && (
+              <div className="space-y-3">
+                {historyAppointments.length > 0 ? (
+                  historyAppointments.map((item) => (
+                    <div key={item.id} className="rounded-2xl border bg-white p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">{item.institution}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{item.project}</div>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={
+                            item.status === 'accepted'
+                              ? badgeDoneClass
+                              : item.status === 'cancelled'
+                                ? badgeIdleClass
+                                : badgePendingClass
+                          }
+                        >
+                          {item.status === 'accepted' ? '已接单' : item.status === 'cancelled' ? '已取消' : '待确认'}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-3">预约时间：{item.time}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border bg-white p-4 text-xs text-muted-foreground">暂无历史预约</div>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {showBookingSheet && selectedInstitutionInfo && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setShowBookingSheet(false)} />
+            <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white shadow-2xl max-h-[78vh] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <button type="button" className="text-sm text-slate-500" onClick={() => setShowBookingSheet(false)}>
+                  关闭
+                </button>
+                <div className="text-sm font-medium">预约提交</div>
+                <div className="w-8" />
+              </div>
+              <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(78vh-64px)]">
+                <div className="rounded-2xl border p-4 bg-slate-50">
+                  <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
+                    <div>项目：{selectedProjectInfo ? selectedProjectInfo.name : '暂未选择'}</div>
+                    <div>机构：{selectedInstitutionInfo.name}</div>
+                    <div>时间：{selectedTime || '请选择时间'}</div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border p-4 bg-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-medium">数据授权</div>
+                      <div className="text-xs text-muted-foreground mt-1">授权后机构可查看问诊摘要与方案方向</div>
+                    </div>
+                    <Badge variant="secondary" className={isAuthorized ? badgeDoneClass : badgePendingClass}>
+                      {isAuthorized ? '已授权' : '待授权'}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant={isAuthorized ? 'outline' : 'default'}
+                    className="w-full rounded-2xl mt-3"
+                    onClick={() => setShowAuthorizeDialog(true)}
+                  >
+                    {isAuthorized ? '查看授权' : '去授权'}
+                  </Button>
+                </div>
+
+                <div className="rounded-2xl border p-4 bg-white">
+                  <div className="text-sm font-medium">选择预约时间</div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTimePicker(true)}
+                    className="mt-3 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm flex items-center justify-between"
+                  >
+                    <span className={selectedTime ? 'text-slate-800' : 'text-slate-400'}>
+                      {selectedTime || '请选择到店时间'}
+                    </span>
+                    <span className="text-slate-400">›</span>
+                  </button>
+                </div>
+
+                <Button className="w-full rounded-2xl" disabled={!canReserve} onClick={handleSubmitAppointment}>
+                  提交预约
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {showAuthorizeDialog && selectedInstitutionInfo && (
+          <>
+            <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setShowAuthorizeDialog(false)} />
+            <div className="fixed left-1/2 top-1/2 z-[70] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white shadow-2xl p-5">
+              <div className="text-base font-semibold">数据授权</div>
+              <div className="text-sm text-muted-foreground mt-3 leading-6">
+                授权后，{selectedInstitutionInfo.name} 可查看你的问诊摘要、辨证结果与调理方向，用于承接本次理疗服务。
+              </div>
+              <div className="flex gap-3 mt-5">
+                <Button variant="outline" className="flex-1 rounded-2xl" onClick={() => setShowAuthorizeDialog(false)}>
+                  取消
+                </Button>
+                <Button
+                  className="flex-1 rounded-2xl"
+                  onClick={() => {
+                    setAuthorizedInstitution(selectedInstitution);
+                    setShowAuthorizeDialog(false);
+                  }}
+                >
+                  确认授权
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {showTimePicker && (
+          <>
+            <div className="fixed inset-0 z-[80] bg-black/30" onClick={() => setShowTimePicker(false)} />
+            <div className="fixed inset-x-0 bottom-0 z-[90] rounded-t-3xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <button type="button" className="text-sm text-slate-500" onClick={() => setShowTimePicker(false)}>
+                  取消
+                </button>
+                <div className="text-sm font-medium">选择预约时间</div>
+                <button type="button" className="text-sm text-slate-900" onClick={() => setShowTimePicker(false)}>
+                  确定
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 px-4 py-4 h-[260px]">
+                <div className="rounded-2xl bg-slate-50 p-2 overflow-y-auto">
+                  {dateOptions.map((item) => {
+                    const value = `${item.label} ${item.sub}`;
+                    const active = selectedDate === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setSelectedDate(value)}
+                        className={`w-full rounded-xl px-3 py-3 text-left mb-2 ${active ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200'}`}
+                      >
+                        <div className="text-sm font-medium">{item.label}</div>
+                        <div className={`text-[11px] mt-1 ${active ? 'text-white/80' : 'text-slate-400'}`}>{item.sub}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-2 overflow-y-auto">
+                  {[
+                    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+                    '13:30', '14:00', '14:30', '15:00', '15:30', '16:00',
+                    '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+                  ].map((slot) => {
+                    const active = selectedSlot === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full rounded-xl px-3 py-3 text-sm mb-2 ${active ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200'}`}
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 function RecordScreen() {
+  const recordTabs = [
+    ['all', '全部'],
+    ['consult', '问诊'],
+    ['plan', '方案'],
+    ['therapy', '理疗'],
+  ];
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
+  const timelineItems = [
+    {
+      id: 'r1',
+      type: 'consult',
+      date: '2026/04/15',
+      title: '本次问诊记录',
+      desc: '主诉、现病史、八纲与舌象已完成采集',
+      tags: ['问诊', '舌象'],
+      result: '肝郁脾虚、湿困中焦',
+      detail: {
+        sections: [
+          ['主诉', '胃胀、睡眠浅、易疲劳'],
+          ['现病史', '近两周工作压力增大后加重，伴随入睡困难与白天乏力'],
+          ['辨证结果', '肝郁脾虚、湿困中焦'],
+        ],
+      },
+    },
+    {
+      id: 'r2',
+      type: 'plan',
+      date: '2026/04/15',
+      title: '今日调理方案',
+      desc: '内服、外治、功法三类方案已生成',
+      tags: ['方案'],
+      result: '健脾祛湿方 / 助眠舒缓理疗 / 八段锦第1式',
+      detail: {
+        sections: [
+          ['内服', '健脾祛湿方（参考）'],
+          ['外治', '助眠舒缓理疗'],
+          ['功法', '八段锦 · 第1式'],
+        ],
+      },
+    },
+    {
+      id: 'r3',
+      type: 'therapy',
+      date: '2026/04/10',
+      title: '理疗预约记录',
+      desc: 'XX康养酒店理疗中心 · 助眠舒缓项目',
+      tags: ['理疗', '预约'],
+      result: '已完成到店服务',
+      detail: {
+        sections: [
+          ['预约机构', 'XX康养酒店理疗中心'],
+          ['理疗项目', '助眠舒缓项目'],
+          ['服务状态', '已完成到店服务'],
+        ],
+      },
+    },
+    {
+      id: 'r4',
+      type: 'consult',
+      date: '2026/04/08',
+      title: '历史问诊记录',
+      desc: '睡眠浅、疲劳感重，完成基础问诊',
+      tags: ['问诊'],
+      result: '脾胃湿困',
+      detail: {
+        sections: [
+          ['主诉', '睡眠浅、疲劳感重'],
+          ['辨证结果', '脾胃湿困'],
+          ['处理建议', '继续调理脾胃与睡眠'],
+        ],
+      },
+    },
+  ];
+
+  const filteredItems = activeTab === 'all'
+    ? timelineItems
+    : timelineItems.filter((item) => item.type === activeTab);
+
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar title="档案" subtitle="历史记录与报告" />
+      <MiniTopBar title="档案" subtitle="健康记录与历史轨迹" />
       <div className="p-4 space-y-4">
-        <IntroCard title="回看记录与报告" desc="长期沉淀" badge="档案" />
-
-        <Card className={sectionCard}>
+        <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-slate-50 to-slate-100">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-14 w-14">
                 <AvatarFallback>李</AvatarFallback>
               </Avatar>
-              <div>
-                <div className="font-semibold">李女士</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  累计问诊 3 次 · 累计方案 5 天 · 离店报告 1 份
-                </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-base font-semibold">李女士</div>
+                <div className="text-xs text-muted-foreground mt-1">32岁 · 肝郁脾虚倾向 · 持续调理中</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mt-4 text-center">
+              <div className="rounded-2xl border bg-white p-3">
+                <div className="text-lg font-semibold">3</div>
+                <div className="text-[11px] text-muted-foreground mt-1">累计问诊</div>
+              </div>
+              <div className="rounded-2xl border bg-white p-3">
+                <div className="text-lg font-semibold">5</div>
+                <div className="text-[11px] text-muted-foreground mt-1">方案记录</div>
+              </div>
+              <div className="rounded-2xl border bg-white p-3">
+                <div className="text-lg font-semibold">1</div>
+                <div className="text-[11px] text-muted-foreground mt-1">理疗记录</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        <div className="grid grid-cols-4 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
+          {recordTabs.map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`rounded-2xl px-2 py-2 font-medium ${activeTab === key ? 'bg-white shadow-sm' : 'text-slate-500'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">档案目录</CardTitle>
+            <CardTitle className="text-base">历史记录</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3 text-sm">
-            {[
-              ['问诊记录', '3 次'],
-              ['舌象记录', '2 次'],
-              ['手指医生记录', '2 次'],
-              ['历史方案', '5 天'],
-              ['理疗记录', '2 次'],
-              ['阶段报告', '1 份'],
-              ['会员标签', '睡眠调理'],
-            ].map(([name, value]) => (
-              <div key={name} className="rounded-2xl border p-4 bg-white">
-                <div className="font-medium">{name}</div>
-                <div className="text-xs text-muted-foreground mt-2">{value}</div>
-              </div>
+          <CardContent className="space-y-3">
+            {filteredItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setSelectedRecord(item)}
+                className="w-full rounded-2xl border bg-white p-4 text-left"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">{item.title}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{item.date}</div>
+                  </div>
+                  <Badge variant="secondary" className={badgeIdleClass}>
+                    {item.type === 'consult' ? '问诊' : item.type === 'plan' ? '方案' : '理疗'}
+                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground mt-3 leading-5">{item.desc}</div>
+                <div className="rounded-xl bg-slate-50 border px-3 py-2 mt-3 text-xs text-slate-700 leading-5">{item.result}</div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {item.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] text-slate-600">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="text-xs text-slate-500 mt-3">点击查看详情</div>
+              </button>
             ))}
           </CardContent>
         </Card>
 
-        <Card className={sectionCard}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">时间轴</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              ['2026/04/09', '生成本次辨证结果与当日方案'],
-              ['2026/04/08', '完成舌象采集与手指医生数据同步'],
-              ['2026/03/28', '完成上次调理并生成评估报告'],
-            ].map(([date, title]) => (
-              <div key={date + title} className="rounded-2xl border p-4">
-                <div className="text-sm font-medium">{title}</div>
-                <div className="text-xs text-muted-foreground mt-1">{date}</div>
+        {selectedRecord && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setSelectedRecord(null)} />
+            <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white shadow-2xl max-h-[75vh] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <button type="button" className="text-sm text-slate-500" onClick={() => setSelectedRecord(null)}>
+                  关闭
+                </button>
+                <div className="text-sm font-medium">记录详情</div>
+                <div className="w-8" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(75vh-64px)]">
+                <div>
+                  <div className="text-base font-semibold">{selectedRecord.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{selectedRecord.date}</div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 border p-4 text-sm leading-6">
+                  {selectedRecord.desc}
+                </div>
+                <div className="space-y-3">
+                  {selectedRecord.detail?.sections?.map(([label, value]) => (
+                    <div key={label} className="rounded-2xl border bg-white p-4">
+                      <div className="text-xs text-muted-foreground">{label}</div>
+                      <div className="text-sm text-slate-800 mt-2 leading-6">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function MeScreen() {
+function MeScreen({ onNavigate }) {
+  const quickEntries = [
+    ['我的档案', '查看健康记录', 'record'],
+    ['我的预约', '理疗预约与到店', 'therapy'],
+    ['授权管理', '查看已授权机构', 'therapy'],
+    ['我的订单', '商城与服务订单', 'me'],
+  ];
+
+  const settingsEntries = ['账号设置', '消息通知', '联系客服', '用户协议'];
+
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar title="我的" subtitle="账户与权限" />
+      <MiniTopBar title="我的" subtitle="账户、权益与常用入口" />
       <div className="p-4 space-y-4">
-        <IntroCard title="授权、会员、订单" desc="账户中心" badge="我的" />
+        <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-slate-50 to-slate-100">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-14 w-14">
+                <AvatarFallback>李</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <div className="text-base font-semibold">李女士</div>
+                <div className="text-xs text-muted-foreground mt-1">持续调理中 · 睡眠与脾胃重点关注</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-violet-50 to-fuchsia-50">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-base font-semibold">银卡会员</div>
-                <div className="text-xs text-muted-foreground mt-1">积分 1,280</div>
+                <div className="text-xs text-muted-foreground mt-1">积分 1,280 · 可享会员权益</div>
               </div>
-              <Badge variant="secondary" className={infoBadgeClass}>
-                会员中心
-              </Badge>
+              <Badge variant="secondary" className={badgeIdleClass}>会员中心</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-4 text-center">
+              <div className="rounded-2xl bg-white/80 border p-3">
+                <div className="text-base font-semibold">3</div>
+                <div className="text-[11px] text-muted-foreground mt-1">可用优惠</div>
+              </div>
+              <div className="rounded-2xl bg-white/80 border p-3">
+                <div className="text-base font-semibold">2</div>
+                <div className="text-[11px] text-muted-foreground mt-1">待使用权益</div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">授权管理</CardTitle>
+            <CardTitle className="text-base">常用入口</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-2xl border p-4 bg-slate-50">
-              <div className="text-sm font-medium">当前未授权</div>
-              <div className="text-xs text-muted-foreground mt-2">支持按次授权与撤回</div>
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="rounded-2xl border p-3">最近授权：0 次</div>
-              <div className="rounded-2xl border p-3">撤回记录：1 次</div>
-            </div>
-            <div className="flex gap-3">
-              <Button className="flex-1 rounded-2xl">去授权</Button>
-              <Button variant="outline" className="flex-1 rounded-2xl">
-                授权记录
-              </Button>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {quickEntries.map(([title, desc, target]) => (
+                <button key={title} onClick={() => onNavigate?.(target)} className="rounded-2xl border bg-white p-4 text-left">
+                  <div className="text-sm font-medium">{title}</div>
+                  <div className="text-[11px] text-muted-foreground mt-2">{desc}</div>
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3">
-          {['我的订单', '商城入口', '消息通知', '联系客服', '地址管理', '账户设置'].map((x) => (
-            <Card key={x} className={sectionCard}>
-              <CardContent className="p-4 text-sm font-medium">{x}</CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card className={sectionCard}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">设置与帮助</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {settingsEntries.map((item) => (
+              <button key={item} className="w-full rounded-2xl border bg-white px-4 py-3 text-left text-sm flex items-center justify-between">
+                <span>{item}</span>
+                <span className="text-slate-400">›</span>
+              </button>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -986,9 +1333,7 @@ function MiniProgramPrototype() {
     setTab('therapy');
   };
 
-  const clearTherapyPrefill = () => {
-    setTherapyPrefill(null);
-  };
+  const clearTherapyPrefill = () => setTherapyPrefill(null);
 
   const screen = useMemo(() => {
     switch (tab) {
@@ -999,7 +1344,7 @@ function MiniProgramPrototype() {
       case 'record':
         return <RecordScreen />;
       case 'me':
-        return <MeScreen />;
+        return <MeScreen onNavigate={setTab} />;
       default:
         return <ConsultScreen />;
     }
@@ -1015,15 +1360,9 @@ function MiniProgramPrototype() {
               const Icon = item.icon;
               const active = tab === item.key;
               return (
-                <button
-                  key={item.key}
-                  onClick={() => setTab(item.key)}
-                  className={`rounded-2xl px-2 py-2 text-center transition ${active ? 'bg-slate-100' : ''}`}
-                >
+                <button key={item.key} onClick={() => setTab(item.key)} className={`rounded-2xl px-2 py-2 text-center transition ${active ? 'bg-slate-100' : ''}`}>
                   <Icon className={`mx-auto h-5 w-5 ${active ? 'opacity-100' : 'opacity-50'}`} />
-                  <div className={`mt-1 text-[11px] ${active ? 'font-medium' : 'text-muted-foreground'}`}>
-                    {item.label}
-                  </div>
+                  <div className={`mt-1 text-[11px] ${active ? 'font-medium' : 'text-muted-foreground'}`}>{item.label}</div>
                 </button>
               );
             })}
@@ -1043,20 +1382,6 @@ function DashboardPage() {
         <Stat label="方案生成率" value="74%" sub="核心看核心引擎产出" />
         <Stat label="理疗承接率" value="41%" sub="核心看场景转化" />
       </div>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>平台主链路</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 gap-3 text-center text-sm">
-            {['用户进入', '完成问诊', '生成方案', '场景承接', '沉淀档案'].map((x) => (
-              <div key={x} className="rounded-2xl border p-4 bg-slate-50">
-                {x}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -1073,41 +1398,6 @@ function UsersPage() {
           <Button className="rounded-xl">新增用户</Button>
         </CardContent>
       </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>用户列表</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50">
-                <tr className="text-left">
-                  <th className="p-3">用户</th>
-                  <th className="p-3">最近问诊</th>
-                  <th className="p-3">当前阶段</th>
-                  <th className="p-3">会员状态</th>
-                  <th className="p-3">场景授权</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['李女士', '2026/04/09', '方案中', '银卡会员', '未授权'],
-                  ['王先生', '2026/04/08', '问诊中', '普通用户', '未授权'],
-                  ['赵女士', '2026/03/28', '已归档', '金卡会员', '已授权 1 家机构'],
-                ].map((row) => (
-                  <tr key={row[0]} className="border-t">
-                    {row.map((cell) => (
-                      <td key={cell} className="p-3">
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -1115,42 +1405,9 @@ function UsersPage() {
 function ConsultCenterPage() {
   return (
     <div className="grid grid-cols-3 gap-5">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>问卷模板</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['基础问诊单', '女性专项问卷', '睡眠专项问卷'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>舌象审核</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['今日上传 58 张', '异常图片 6 张', '待复核 12 条'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>辨证结果分布</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['肝郁脾虚 31%', '脾胃湿困 24%', '气血不足 19%'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>问卷模板</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['基础问诊单', '女性专项问卷', '睡眠专项问卷'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>舌象审核</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['今日上传 58 张', '异常图片 6 张', '待复核 12 条'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>辨证结果分布</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['肝郁脾虚 31%', '脾胃湿困 24%', '气血不足 19%'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
 }
@@ -1158,30 +1415,8 @@ function ConsultCenterPage() {
 function PlanCenterPage() {
   return (
     <div className="grid grid-cols-2 gap-5">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>方案模板</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['舒肝解郁方案', '健脾安神方案', '睡眠修复方案'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>动态调整规则</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['睡眠差 → 助眠优先', '胃胀重 → 健脾优先', '情绪波动大 → 舒肝优先'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>方案模板</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['舒肝解郁方案', '健脾安神方案', '睡眠修复方案'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>动态调整规则</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['睡眠差 → 助眠优先', '胃胀重 → 健脾优先', '情绪波动大 → 舒肝优先'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
 }
@@ -1189,42 +1424,9 @@ function PlanCenterPage() {
 function TherapyCenterPage() {
   return (
     <div className="grid grid-cols-3 gap-5">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>合作机构</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['康养酒店 6 家', '养生馆 12 家', '待审核机构 3 家'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>服务项目</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['助眠舒缓', '健脾和中', '情绪舒缓'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>授权与预约</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['今日授权 39 次', '预约转化 21 单', '撤回授权 4 次'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>合作机构</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['康养酒店 6 家', '养生馆 12 家', '待审核机构 3 家'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>服务项目</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['助眠舒缓', '健脾和中', '情绪舒缓'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>授权与预约</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['今日授权 39 次', '预约转化 21 单', '撤回授权 4 次'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
 }
@@ -1232,32 +1434,8 @@ function TherapyCenterPage() {
 function RecordCenterPage() {
   return (
     <div className="grid grid-cols-2 gap-5">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>档案资产</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['问诊记录 12,486 条', '舌象记录 6,203 条', '历史方案 28,730 份', '评估报告 3,120 份'].map(
-            (x) => (
-              <div key={x} className="rounded-2xl border p-3">
-                {x}
-              </div>
-            ),
-          )}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>数据质量</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['完整度 96%', '可追溯率 99%', '重复用户识别 98%'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>档案资产</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['问诊记录 12,486 条', '舌象记录 6,203 条', '历史方案 28,730 份', '评估报告 3,120 份'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>数据质量</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['完整度 96%', '可追溯率 99%', '重复用户识别 98%'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
 }
@@ -1265,30 +1443,8 @@ function RecordCenterPage() {
 function CommercePage() {
   return (
     <div className="grid grid-cols-2 gap-5">
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>会员运营</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['银卡会员 820 人', '金卡会员 216 人', '复购意向 129 人'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>商品与服务包</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {['草本安睡茶', '脾胃调养足浴包', '睡眠改善服务包'].map((x) => (
-            <div key={x} className="rounded-2xl border p-3">
-              {x}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>会员运营</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['银卡会员 820 人', '金卡会员 216 人', '复购意向 129 人'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>商品与服务包</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['草本安睡茶', '脾胃调养足浴包', '睡眠改善服务包'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
 }
@@ -1297,12 +1453,7 @@ function SystemPage() {
   return (
     <div className="grid grid-cols-3 gap-5">
       {['角色权限', '接口配置', '字典配置', '消息模板', '问卷题库', '授权规则'].map((x) => (
-        <Card key={x} className="rounded-2xl shadow-sm">
-          <CardContent className="p-5">
-            <div className="text-sm font-medium">{x}</div>
-            <div className="text-xs text-muted-foreground mt-2">预留配置页原型入口</div>
-          </CardContent>
-        </Card>
+        <Card key={x} className="rounded-2xl shadow-sm"><CardContent className="p-5"><div className="text-sm font-medium">{x}</div><div className="text-xs text-muted-foreground mt-2">预留配置页原型入口</div></CardContent></Card>
       ))}
     </div>
   );
@@ -1313,22 +1464,14 @@ function AdminPrototype() {
 
   const content = useMemo(() => {
     switch (menu) {
-      case 'users':
-        return <UsersPage />;
-      case 'consult':
-        return <ConsultCenterPage />;
-      case 'plan':
-        return <PlanCenterPage />;
-      case 'therapy':
-        return <TherapyCenterPage />;
-      case 'record':
-        return <RecordCenterPage />;
-      case 'commerce':
-        return <CommercePage />;
-      case 'system':
-        return <SystemPage />;
-      default:
-        return <DashboardPage />;
+      case 'users': return <UsersPage />;
+      case 'consult': return <ConsultCenterPage />;
+      case 'plan': return <PlanCenterPage />;
+      case 'therapy': return <TherapyCenterPage />;
+      case 'record': return <RecordCenterPage />;
+      case 'commerce': return <CommercePage />;
+      case 'system': return <SystemPage />;
+      default: return <DashboardPage />;
     }
   }, [menu]);
 
@@ -1336,21 +1479,13 @@ function AdminPrototype() {
     <div className="rounded-[28px] border bg-white shadow-2xl overflow-hidden min-h-[844px]">
       <div className="grid grid-cols-[240px_1fr] min-h-[844px]">
         <div className="border-r bg-slate-50 p-4">
-          <div className="px-3 py-4">
-            <div className="text-lg font-semibold tracking-tight">平台运营后台</div>
-          </div>
+          <div className="px-3 py-4"><div className="text-lg font-semibold tracking-tight">平台运营后台</div></div>
           <div className="space-y-1 mt-2">
             {adminMenus.map((item) => {
               const Icon = item.icon;
               const active = menu === item.key;
               return (
-                <button
-                  key={item.key}
-                  onClick={() => setMenu(item.key)}
-                  className={`w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition ${
-                    active ? 'bg-white shadow-sm border' : 'hover:bg-white/70'
-                  }`}
-                >
+                <button key={item.key} onClick={() => setMenu(item.key)} className={`w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition ${active ? 'bg-white shadow-sm border' : 'hover:bg-white/70'}`}>
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
                 </button>
@@ -1360,19 +1495,10 @@ function AdminPrototype() {
         </div>
         <div className="bg-white">
           <div className="border-b px-6 py-4 flex items-center justify-between">
-            <div>
-              <div className="text-lg font-semibold">{adminMenus.find((x) => x.key === menu)?.label}</div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Input placeholder="搜索功能或用户" className="w-64 rounded-2xl" />
-              <Avatar>
-                <AvatarFallback>管</AvatarFallback>
-              </Avatar>
-            </div>
+            <div><div className="text-lg font-semibold">{adminMenus.find((x) => x.key === menu)?.label}</div></div>
+            <div className="flex items-center gap-3"><Input placeholder="搜索功能或用户" className="w-64 rounded-2xl" /><Avatar><AvatarFallback>管</AvatarFallback></Avatar></div>
           </div>
-          <ScrollArea className="h-[780px]">
-            <div className="p-6">{content}</div>
-          </ScrollArea>
+          <ScrollArea className="h-[780px]"><div className="p-6">{content}</div></ScrollArea>
         </div>
       </div>
     </div>
@@ -1382,53 +1508,28 @@ function AdminPrototype() {
 export function TCMPrototypePage({ defaultView = 'mini' }) {
   const [view, setView] = useState(defaultView);
 
+  useEffect(() => {
+    setView(defaultView);
+  }, [defaultView]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="text-3xl font-semibold tracking-tight">中医健康服务平台 · 产品原型</div>
-            <div className="text-sm text-muted-foreground mt-2">按主路径重排，保留必要样例数据</div>
+            <div className="text-sm text-muted-foreground mt-2">问诊模块已按长期档案与本次问诊拆分</div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant={view === 'mini' ? 'default' : 'outline'}
-              className="rounded-2xl"
-              onClick={() => setView('mini')}
-            >
-              用户小程序
-            </Button>
-            <Button
-              variant={view === 'admin' ? 'default' : 'outline'}
-              className="rounded-2xl"
-              onClick={() => setView('admin')}
-            >
-              平台后台
-            </Button>
-            <Button
-              variant={view === 'both' ? 'default' : 'outline'}
-              className="rounded-2xl"
-              onClick={() => setView('both')}
-            >
-              双端同看
-            </Button>
+            <Button variant={view === 'mini' ? 'default' : 'outline'} className="rounded-2xl" onClick={() => setView('mini')}>用户小程序</Button>
+            <Button variant={view === 'admin' ? 'default' : 'outline'} className="rounded-2xl" onClick={() => setView('admin')}>平台后台</Button>
+            <Button variant={view === 'both' ? 'default' : 'outline'} className="rounded-2xl" onClick={() => setView('both')}>双端同看</Button>
           </div>
         </div>
 
-        {view === 'mini' && (
-          <div className="flex justify-center">
-            <MiniProgramPrototype />
-          </div>
-        )}
-
+        {view === 'mini' && <div className="flex justify-center"><MiniProgramPrototype /></div>}
         {view === 'admin' && <AdminPrototype />}
-
-        {view === 'both' && (
-          <div className="grid xl:grid-cols-[420px_1fr] gap-8 items-start">
-            <MiniProgramPrototype />
-            <AdminPrototype />
-          </div>
-        )}
+        {view === 'both' && <div className="grid xl:grid-cols-[420px_1fr] gap-8 items-start"><MiniProgramPrototype /><AdminPrototype /></div>}
       </div>
     </div>
   );
