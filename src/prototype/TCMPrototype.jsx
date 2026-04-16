@@ -46,9 +46,9 @@ const badgeIdleClass =
   'rounded-full whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200';
 
 const appTabs = [
-  { key: 'consult', label: '问诊', icon: ClipboardList },
+  { key: 'consult', label: '健康问卷', icon: ClipboardList },
   { key: 'plan', label: '方案', icon: HeartPulse },
-  { key: 'therapy', label: '理疗', icon: Building2 },
+  { key: 'therapy', label: '调理', icon: Building2 },
   { key: 'record', label: '档案', icon: FileText },
   { key: 'me', label: '我的', icon: User },
 ];
@@ -56,7 +56,7 @@ const appTabs = [
 const adminMenus = [
   { key: 'dashboard', label: '数据总览', icon: LayoutDashboard },
   { key: 'users', label: '用户中心', icon: Users },
-  { key: 'consult', label: '问诊中心', icon: Stethoscope },
+  { key: 'consult', label: '健康问卷中心', icon: Stethoscope },
   { key: 'plan', label: '方案中心', icon: HeartPulse },
   { key: 'therapy', label: '场景承接', icon: CalendarDays },
   { key: 'record', label: '健康档案', icon: FileText },
@@ -155,8 +155,8 @@ function ConsultScreen() {
 
   const getPrimaryAction = () => {
     if (!profileComplete) return { label: '先完善个人档案', action: () => setConsultTab('profile') };
-    if (!visitComplete) return { label: '继续本次问诊', action: () => setConsultTab('visit') };
-    if (!bagangComplete) return { label: '继续八纲问诊', action: () => setConsultTab('bagang') };
+    if (!visitComplete) return { label: '继续本次健康问卷', action: () => setConsultTab('visit') };
+    if (!bagangComplete) return { label: '继续八纲健康问卷', action: () => setConsultTab('bagang') };
     if (!tongueCaptureComplete) return { label: '去采集舌象', action: () => setConsultTab('overview') };
     return {
       label: '开始AI辨证',
@@ -171,7 +171,7 @@ function ConsultScreen() {
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar title="问诊" subtitle="采集与辩证" />
+      <MiniTopBar title="健康问卷" subtitle="采集与辩证" />
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-4 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
           {[
@@ -192,7 +192,7 @@ function ConsultScreen() {
 
         {consultTab === 'overview' && (
           <>
-            <IntroCard title="本次问诊" badge="核心" />
+            <IntroCard title="本次健康问卷" badge="核心" />
 
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
@@ -229,7 +229,7 @@ function ConsultScreen() {
 
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">本次问诊</CardTitle>
+                <CardTitle className="text-base">本次健康问卷</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -374,10 +374,10 @@ function ConsultScreen() {
 
         {consultTab === 'visit' && (
           <>
-            <IntroCard title="本次问诊" desc="记录本次症状变化" badge="本次" />
+            <IntroCard title="本次健康问卷" desc="记录本次症状变化" badge="本次" />
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">问诊信息</CardTitle>
+                <CardTitle className="text-base">健康问卷信息</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-2xl border p-4 bg-white">
@@ -427,7 +427,7 @@ function ConsultScreen() {
             <IntroCard title="八纲前置辩证" desc="8 个维度" badge="填写" />
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">问诊进度</CardTitle>
+                <CardTitle className="text-base">健康问卷进度</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -450,7 +450,7 @@ function ConsultScreen() {
             </Card>
             <Card className={sectionCard}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">当前：寒热问诊</CardTitle>
+                <CardTitle className="text-base">当前：寒热健康问卷</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-2xl border p-4 bg-white">
@@ -502,7 +502,7 @@ function ConsultScreen() {
               </CardContent>
             </Card>
             <Button className="w-full rounded-2xl" onClick={() => { setBagangComplete(true); setConsultTab('overview'); setShowSyndromeResult(false); }}>
-              完成本次问诊
+              完成本次健康问卷
             </Button>
           </>
         )}
@@ -518,13 +518,13 @@ function PlanScreen({ goToTherapyWithProject }) {
     title: '肝郁脾虚、湿困中焦',
     summary: '以睡眠浅、胃胀、疲劳感重为主要表现',
     detail:
-      '综合本次问诊信息与舌象特征，判断当前以肝郁脾虚为主，兼有湿困中焦。长期情绪压力导致气机不畅，影响脾胃运化功能，进而出现胃胀、疲劳、睡眠质量下降等表现。建议以疏肝理气、健脾祛湿为主要调理方向，并结合外治疗法与日常功法进行综合干预。',
+      '综合本次健康问卷信息与舌象特征，判断当前以肝郁脾虚为主，兼有湿困中焦。长期情绪压力导致气机不畅，影响脾胃运化功能，进而出现胃胀、疲劳、睡眠质量下降等表现。建议以疏肝理气、健脾祛湿为主要调理方向，并结合外治疗法与日常功法进行综合干预。',
     tags: ['睡眠', '脾胃', '情绪'],
   };
 
   const planBuckets = [
     { key: 'internal', title: '内服', desc: '疏肝健脾调理', sample: '健脾祛湿方', action: '去查看' },
-    { key: 'external', title: '外治', desc: '艾灸+推拿', sample: '助眠舒缓理疗', action: '去预约' },
+    { key: 'external', title: '外治', desc: '艾灸+推拿', sample: '助眠舒缓调理', action: '去预约' },
     { key: 'exercise', title: '功法', desc: '日常调养', sample: '八段锦 · 第1式', action: '开始练习' },
   ];
 
@@ -624,12 +624,12 @@ function TherapyScreen({ prefill, clearPrefill }) {
 
   const therapyProjects = [
     { id: 'sleep', name: '助眠舒缓项目', desc: '适合睡眠浅、夜醒频繁、压力偏大时选择' },
-    { id: 'spleen', name: '健脾和中理疗', desc: '适合胃胀、疲劳感重、饮食不规律时选择' },
+    { id: 'spleen', name: '健脾和中调理', desc: '适合胃胀、疲劳感重、饮食不规律时选择' },
     { id: 'mood', name: '情绪舒缓调理', desc: '适合情绪紧张、胸闷不舒时选择' },
   ];
 
   const therapyInstitutions = [
-    { id: 'hotel', name: 'XX康养酒店理疗中心', desc: '距离 280m · 可承接助眠舒缓 / 经络理疗', tags: ['助眠舒缓', '经络理疗'] },
+    { id: 'hotel', name: 'XX康养酒店调理中心', desc: '距离 280m · 可承接助眠舒缓 / 经络调理', tags: ['助眠舒缓', '经络调理'] },
     { id: 'herb', name: '本草养生馆', desc: '距离 1.2km · 可承接脾胃调理 / 情绪舒缓', tags: ['健脾和中', '情绪舒缓'] },
   ];
 
@@ -644,7 +644,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
   const [appointments, setAppointments] = useState([
     {
       id: 'a1',
-      institution: 'XX康养酒店理疗中心',
+      institution: 'XX康养酒店调理中心',
       project: '助眠舒缓项目',
       time: '今天 04/15 周三 14:00',
       status: 'pending',
@@ -652,7 +652,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
     {
       id: 'a2',
       institution: '本草养生馆',
-      project: '健脾和中理疗',
+      project: '健脾和中调理',
       time: '2026/04/10 15:00',
       status: 'accepted',
     },
@@ -717,13 +717,13 @@ function TherapyScreen({ prefill, clearPrefill }) {
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar title="理疗" subtitle="项目、机构、授权与预约" />
+      <MiniTopBar title="调理" subtitle="项目、机构、授权与预约" />
       <div className="p-4 space-y-4">
-        <IntroCard title="项目 ➡️ 机构 ➡️ 授权" desc="授权后即可预约线下养生服务" badge="理疗" />
+        <IntroCard title="项目 ➡️ 机构 ➡️ 授权" desc="授权后即可预约线下养生服务" badge="调理" />
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">推荐理疗项目</CardTitle>
+            <CardTitle className="text-base">推荐调理项目</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {therapyProjects.map((item) => {
@@ -755,7 +755,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">附近理疗机构</CardTitle>
+            <CardTitle className="text-base">附近调理机构</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {therapyInstitutions.map((item) => {
@@ -920,7 +920,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-medium">数据授权</div>
-                      <div className="text-xs text-muted-foreground mt-1">授权后机构可查看问诊摘要与方案方向</div>
+                      <div className="text-xs text-muted-foreground mt-1">授权后机构可查看健康问卷摘要与方案方向</div>
                     </div>
                     <Badge variant="secondary" className={isAuthorized ? badgeDoneClass : badgePendingClass}>
                       {isAuthorized ? '已授权' : '待授权'}
@@ -963,7 +963,7 @@ function TherapyScreen({ prefill, clearPrefill }) {
             <div className="fixed left-1/2 top-1/2 z-[70] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-white shadow-2xl p-5">
               <div className="text-base font-semibold">数据授权</div>
               <div className="text-sm text-muted-foreground mt-3 leading-6">
-                授权后，{selectedInstitutionInfo.name} 可查看你的问诊摘要、辨证结果与调理方向，用于承接本次理疗服务。
+                授权后，{selectedInstitutionInfo.name} 可查看你的健康问卷摘要、辨证结果与调理方向，用于承接本次调理服务。
               </div>
               <div className="flex gap-3 mt-5">
                 <Button variant="outline" className="flex-1 rounded-2xl" onClick={() => setShowAuthorizeDialog(false)}>
@@ -1047,9 +1047,9 @@ function TherapyScreen({ prefill, clearPrefill }) {
 function RecordScreen() {
   const recordTabs = [
     ['all', '全部'],
-    ['consult', '问诊'],
+    ['consult', '健康问卷'],
     ['plan', '方案'],
-    ['therapy', '理疗'],
+    ['therapy', '调理'],
   ];
   const [activeTab, setActiveTab] = useState('all');
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -1059,9 +1059,9 @@ function RecordScreen() {
       id: 'r1',
       type: 'consult',
       date: '2026/04/15',
-      title: '本次问诊记录',
+      title: '本次健康问卷记录',
       desc: '主诉、现病史、八纲与舌象已完成采集',
-      tags: ['问诊', '舌象'],
+      tags: ['健康问卷', '舌象'],
       result: '肝郁脾虚、湿困中焦',
       detail: {
         sections: [
@@ -1078,11 +1078,11 @@ function RecordScreen() {
       title: '今日调理方案',
       desc: '内服、外治、功法三类方案已生成',
       tags: ['方案'],
-      result: '健脾祛湿方 / 助眠舒缓理疗 / 八段锦第1式',
+      result: '健脾祛湿方 / 助眠舒缓调理 / 八段锦第1式',
       detail: {
         sections: [
           ['内服', '健脾祛湿方（参考）'],
-          ['外治', '助眠舒缓理疗'],
+          ['外治', '助眠舒缓调理'],
           ['功法', '八段锦 · 第1式'],
         ],
       },
@@ -1091,14 +1091,14 @@ function RecordScreen() {
       id: 'r3',
       type: 'therapy',
       date: '2026/04/10',
-      title: '理疗预约记录',
-      desc: 'XX康养酒店理疗中心 · 助眠舒缓项目',
-      tags: ['理疗', '预约'],
+      title: '调理预约记录',
+      desc: 'XX康养酒店调理中心 · 助眠舒缓项目',
+      tags: ['调理', '预约'],
       result: '已完成到店服务',
       detail: {
         sections: [
-          ['预约机构', 'XX康养酒店理疗中心'],
-          ['理疗项目', '助眠舒缓项目'],
+          ['预约机构', 'XX康养酒店调理中心'],
+          ['调理项目', '助眠舒缓项目'],
           ['服务状态', '已完成到店服务'],
         ],
       },
@@ -1107,9 +1107,9 @@ function RecordScreen() {
       id: 'r4',
       type: 'consult',
       date: '2026/04/08',
-      title: '历史问诊记录',
-      desc: '睡眠浅、疲劳感重，完成基础问诊',
-      tags: ['问诊'],
+      title: '历史健康问卷记录',
+      desc: '睡眠浅、疲劳感重，完成基础健康问卷',
+      tags: ['健康问卷'],
       result: '脾胃湿困',
       detail: {
         sections: [
@@ -1143,7 +1143,7 @@ function RecordScreen() {
             <div className="grid grid-cols-3 gap-3 mt-4 text-center">
               <div className="rounded-2xl border bg-white p-3">
                 <div className="text-lg font-semibold">3</div>
-                <div className="text-[11px] text-muted-foreground mt-1">累计问诊</div>
+                <div className="text-[11px] text-muted-foreground mt-1">累计健康问卷</div>
               </div>
               <div className="rounded-2xl border bg-white p-3">
                 <div className="text-lg font-semibold">5</div>
@@ -1151,7 +1151,7 @@ function RecordScreen() {
               </div>
               <div className="rounded-2xl border bg-white p-3">
                 <div className="text-lg font-semibold">1</div>
-                <div className="text-[11px] text-muted-foreground mt-1">理疗记录</div>
+                <div className="text-[11px] text-muted-foreground mt-1">调理记录</div>
               </div>
             </div>
           </CardContent>
@@ -1186,7 +1186,7 @@ function RecordScreen() {
                     <div className="text-xs text-muted-foreground mt-1">{item.date}</div>
                   </div>
                   <Badge variant="secondary" className={badgeIdleClass}>
-                    {item.type === 'consult' ? '问诊' : item.type === 'plan' ? '方案' : '理疗'}
+                    {item.type === 'consult' ? '健康问卷' : item.type === 'plan' ? '方案' : '调理'}
                   </Badge>
                 </div>
                 <div className="text-xs text-muted-foreground mt-3 leading-5">{item.desc}</div>
@@ -1243,7 +1243,7 @@ function RecordScreen() {
 function MeScreen({ onNavigate }) {
   const quickEntries = [
     ['我的档案', '查看健康记录', 'record'],
-    ['我的预约', '理疗预约与到店', 'therapy'],
+    ['我的预约', '调理预约与到店', 'therapy'],
     ['授权管理', '查看已授权机构', 'therapy'],
     ['我的订单', '商城与服务订单', 'me'],
   ];
@@ -1378,9 +1378,9 @@ function DashboardPage() {
     <div className="space-y-5">
       <div className="grid grid-cols-4 gap-4">
         <Stat label="本周活跃用户" value="1,286" sub="核心看用户规模" />
-        <Stat label="问诊完成率" value="82%" sub="核心看采集完成情况" />
+        <Stat label="健康问卷完成率" value="82%" sub="核心看采集完成情况" />
         <Stat label="方案生成率" value="74%" sub="核心看核心引擎产出" />
-        <Stat label="理疗承接率" value="41%" sub="核心看场景转化" />
+        <Stat label="调理承接率" value="41%" sub="核心看场景转化" />
       </div>
     </div>
   );
@@ -1405,7 +1405,7 @@ function UsersPage() {
 function ConsultCenterPage() {
   return (
     <div className="grid grid-cols-3 gap-5">
-      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>问卷模板</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['基础问诊单', '女性专项问卷', '睡眠专项问卷'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>问卷模板</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['基础健康问卷单', '女性专项问卷', '睡眠专项问卷'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
       <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>舌象审核</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['今日上传 58 张', '异常图片 6 张', '待复核 12 条'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
       <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>辨证结果分布</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['肝郁脾虚 31%', '脾胃湿困 24%', '气血不足 19%'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
@@ -1434,7 +1434,7 @@ function TherapyCenterPage() {
 function RecordCenterPage() {
   return (
     <div className="grid grid-cols-2 gap-5">
-      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>档案资产</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['问诊记录 12,486 条', '舌象记录 6,203 条', '历史方案 28,730 份', '评估报告 3,120 份'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
+      <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>档案资产</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['健康问卷记录 12,486 条', '舌象记录 6,203 条', '历史方案 28,730 份', '评估报告 3,120 份'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
       <Card className="rounded-2xl shadow-sm"><CardHeader><CardTitle>数据质量</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">{['完整度 96%', '可追溯率 99%', '重复用户识别 98%'].map((x) => <div key={x} className="rounded-2xl border p-3">{x}</div>)}</CardContent></Card>
     </div>
   );
@@ -1518,7 +1518,7 @@ export function TCMPrototypePage({ defaultView = 'mini' }) {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="text-3xl font-semibold tracking-tight">中医健康服务平台 · 产品原型</div>
-            <div className="text-sm text-muted-foreground mt-2">问诊模块已按长期档案与本次问诊拆分</div>
+            <div className="text-sm text-muted-foreground mt-2">健康问卷模块已按长期档案与本次健康问卷拆分</div>
           </div>
           <div className="flex gap-2">
             <Button variant={view === 'mini' ? 'default' : 'outline'} className="rounded-2xl" onClick={() => setView('mini')}>用户小程序</Button>
