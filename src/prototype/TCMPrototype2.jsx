@@ -31,24 +31,20 @@ const phoneFrame =
   "mx-auto w-full max-w-[390px] h-[min(844px,calc(100vh-220px))] min-h-[720px] rounded-[36px] border border-slate-200 bg-white shadow-2xl overflow-hidden";
 const sectionCard = "rounded-[24px] border border-slate-200 shadow-sm bg-white";
 const iconChip = "rounded-2xl bg-slate-100 border border-slate-200 p-2.5";
-const statusPillBase =
-  "inline-flex h-7 items-center rounded-full whitespace-nowrap px-3 text-[12px] font-medium leading-none shrink-0";
 const infoBadgeClass =
-  `${statusPillBase} bg-slate-100 text-slate-700 border border-slate-200`;
+  "rounded-full whitespace-nowrap px-3 py-1 shrink-0 bg-slate-100 text-slate-700 border border-slate-200";
 const statusBadgeClass =
-  `${statusPillBase} bg-amber-50 text-amber-700 border border-amber-200`;
+  "rounded-full whitespace-nowrap px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200";
 const fieldBadgeClass =
-  `${statusPillBase} bg-white text-slate-600 border border-slate-200`;
+  "rounded-full whitespace-nowrap px-3 py-1 bg-white text-slate-600 border border-slate-200";
 const badgeDoneClass =
-  `${statusPillBase} bg-emerald-50 text-emerald-700 border border-emerald-200`;
+  "rounded-full whitespace-nowrap px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200";
 const badgePendingClass =
-  `${statusPillBase} bg-amber-50 text-amber-700 border border-amber-200`;
+  "rounded-full whitespace-nowrap px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200";
 const badgeSelectedClass =
-  `${statusPillBase} bg-slate-900 text-white border border-slate-900`;
+  "rounded-full whitespace-nowrap px-3 py-1 bg-slate-900 text-white border border-slate-900";
 const badgeIdleClass =
-  `${statusPillBase} bg-slate-100 text-slate-700 border border-slate-200`;
-const appointmentStatusBadgeBase =
-  "inline-flex h-7 w-[72px] items-center justify-center rounded-full text-[12px] font-medium leading-none shrink-0";
+  "rounded-full whitespace-nowrap px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200";
 
 const appTabs = [
   { key: "consult", label: "健康问卷", icon: ClipboardList },
@@ -81,140 +77,21 @@ function Stat({ label, value, sub }) {
   );
 }
 
-function MiniTopBar({ title, subtitle, onBellClick, onBack, hideBell = false }) {
+function MiniTopBar({ title, subtitle }) {
   return (
     <div className="px-5 pt-5 pb-3 border-b bg-white">
       <div className="flex items-start justify-between gap-3 flex-nowrap">
-        <div className="flex items-start gap-3">
-          {onBack ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mt-0.5 h-9 w-9 rounded-full"
-              onClick={onBack}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
+        <div>
+          <div className="text-lg font-semibold tracking-tight">{title}</div>
+          {subtitle ? (
+            <div className="text-[11px] text-muted-foreground mt-1">
+              {subtitle}
+            </div>
           ) : null}
-          <div>
-            <div className="text-lg font-semibold tracking-tight">{title}</div>
-            {subtitle ? (
-              <div className="text-[11px] text-muted-foreground mt-1">
-                {subtitle}
-              </div>
-            ) : null}
-          </div>
         </div>
-        {!hideBell ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full h-9 w-9"
-            onClick={onBellClick}
-          >
-            <Bell className="h-5 w-5" />
-          </Button>
-        ) : (
-          <div className="w-9" />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function MessageScreen({ onBack }) {
-  const messageGroups = [
-    {
-      type: "预约失败",
-      badgeClass: `${statusPillBase} bg-rose-50 text-rose-700 border border-rose-200`,
-      items: [
-        {
-          id: "m1",
-          title: "预约失败通知",
-          body: "XX康养酒店调理中心未能接单，原因是当日调理师排班已满。",
-          time: "今天 15:20",
-          unread: true,
-        },
-      ],
-    },
-    {
-      type: "预约提醒",
-      badgeClass: `${statusPillBase} bg-amber-50 text-amber-700 border border-amber-200`,
-      items: [
-        {
-          id: "m2",
-          title: "预约到店提醒",
-          body: "你预约的助眠舒缓项目将在 2 小时后开始，请按时到店。",
-          time: "今天 12:00",
-          unread: true,
-        },
-      ],
-    },
-    {
-      type: "辨证结果",
-      badgeClass: `${statusPillBase} bg-emerald-50 text-emerald-700 border border-emerald-200`,
-      items: [
-        {
-          id: "m3",
-          title: "AI 辨证结果已生成",
-          body: "本次辨证结果与调理建议已生成，可前往方案页查看详情。",
-          time: "今天 10:18",
-          unread: false,
-        },
-      ],
-    },
-  ];
-
-  return (
-    <div className="bg-slate-50 min-h-full pb-10">
-      <MiniTopBar
-        title="消息"
-        subtitle="预约、提醒与结果通知"
-        onBack={onBack}
-        hideBell
-      />
-      <div className="p-4 space-y-4">
-        <IntroCard
-          title="消息列表"
-          desc="包含预约失败、预约提醒和 AI 辨证结果通知"
-          badge="3条"
-        />
-
-        <Card className={sectionCard}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">最新消息</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {messageGroups.map((group) =>
-              group.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-slate-900">
-                          {item.title}
-                        </div>
-                        {item.unread ? (
-                          <span className="h-2 w-2 rounded-full bg-rose-500" />
-                        ) : null}
-                      </div>
-                      <div className="mt-2 text-[13px] leading-6 text-slate-600">
-                        {item.body}
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className={group.badgeClass}>
-                      {group.type}
-                    </Badge>
-                  </div>
-                  <div className="mt-3 text-[12px] text-slate-400">{item.time}</div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+          <Bell className="h-5 w-5" />
+        </Button>
       </div>
     </div>
   );
@@ -226,8 +103,11 @@ function IntroCard({ title, desc, badge }) {
       <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-slate-50 to-slate-100">
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
+            <div>
               <div className="text-xl font-semibold">{title}</div>
+              {desc ? (
+                <div className="mt-2 text-xs text-muted-foreground">{desc}</div>
+              ) : null}
             </div>
             {badge ? (
               <Badge variant="secondary" className={infoBadgeClass}>
@@ -235,18 +115,13 @@ function IntroCard({ title, desc, badge }) {
               </Badge>
             ) : null}
           </div>
-          {desc ? (
-            <div className="mt-3 text-xs leading-6 text-muted-foreground">
-              {desc}
-            </div>
-          ) : null}
         </CardContent>
       </Card>
     </motion.div>
   );
 }
 
-function ConsultScreen({ onOpenMessages }) {
+function ConsultScreen() {
   const [consultTab, setConsultTab] = useState("overview");
   const [profileData, setProfileData] = useState({
     gender: "女",
@@ -396,11 +271,7 @@ function ConsultScreen({ onOpenMessages }) {
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="健康问卷"
-        subtitle="采集与辩证"
-        onBellClick={onOpenMessages}
-      />
+      <MiniTopBar title="健康问卷" subtitle="采集与辩证" />
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-4 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
           {[
@@ -1136,7 +1007,7 @@ function ConsultScreen({ onOpenMessages }) {
   );
 }
 
-function PlanScreen({ goToTherapyWithProject, onOpenMessages }) {
+function PlanScreen({ goToTherapyWithProject }) {
   const [expanded, setExpanded] = useState(false);
   const [planView, setPlanView] = useState("overview");
   const [showTonguePreview, setShowTonguePreview] = useState(false);
@@ -1220,11 +1091,7 @@ function PlanScreen({ goToTherapyWithProject, onOpenMessages }) {
   if (planView === "diagnosis-detail") {
     return (
       <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="辨证详情"
-        subtitle="结果与辨证数据总览"
-        onBellClick={onOpenMessages}
-      />
+        <MiniTopBar title="辨证详情" subtitle="结果与辨证数据总览" />
         <div className="p-4 space-y-4">
           <button
             type="button"
@@ -1429,15 +1296,11 @@ function PlanScreen({ goToTherapyWithProject, onOpenMessages }) {
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="方案"
-        subtitle="AI辩证分析与疗养方案"
-        onBellClick={onOpenMessages}
-      />
+      <MiniTopBar title="方案" subtitle="AI辩证分析与疗养方案" />
       <div className="p-4 space-y-4">
         <IntroCard
           title="本次调理方案"
-          desc="本次辨证结果基于健康问卷、舌象与手指医生数据生成"
+          desc="基于本次辨证结果生成"
           badge="今日"
         />
 
@@ -1452,22 +1315,22 @@ function PlanScreen({ goToTherapyWithProject, onOpenMessages }) {
               className="block w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0">
                   <div className="font-semibold text-slate-900">
                     {syndromeResult.title}
                   </div>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {syndromeResult.summary}
+                  </div>
+                  <div
+                    className={`mt-3 text-xs leading-5 text-slate-600 transition-all ${
+                      expanded ? "" : "line-clamp-2"
+                    }`}
+                  >
+                    {syndromeResult.detail}
+                  </div>
                 </div>
                 <span className="shrink-0 text-xs text-slate-500">查看详情</span>
-              </div>
-              <div className="mt-2 text-xs text-muted-foreground">
-                {syndromeResult.summary}
-              </div>
-              <div
-                className={`mt-3 text-xs leading-5 text-slate-600 transition-all ${
-                  expanded ? "" : "line-clamp-2"
-                }`}
-              >
-                {syndromeResult.detail}
               </div>
             </button>
             <button
@@ -1525,7 +1388,7 @@ function PlanScreen({ goToTherapyWithProject, onOpenMessages }) {
   );
 }
 
-function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
+function TherapyScreen({ prefill, clearPrefill }) {
   const now = new Date();
   const timeSlots = [
     "09:00",
@@ -1609,21 +1472,13 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
     },
     {
       id: "a2",
-      institution: "XX康养酒店调理中心",
-      project: "经络舒缓调理",
-      time: "2026/04/12 10:00",
+      institution: "本草养生馆",
+      project: "健脾和中调理",
+      time: "2026/04/10 15:00",
       status: "accepted",
     },
     {
       id: "a3",
-      institution: "本草养生馆",
-      project: "健脾和中调理",
-      time: "2026/04/10 15:00",
-      status: "rejected",
-      rejectReason: "当日脾胃调理师排班已满，建议改约明日上午时段。",
-    },
-    {
-      id: "a4",
       institution: "本草养生馆",
       project: "情绪舒缓调理",
       time: "2026/04/08 14:30",
@@ -1657,100 +1512,11 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
   );
   const selectedTime =
     selectedDate && selectedSlot ? `${selectedDate} ${selectedSlot}` : "";
-  const latestAppointment =
-    appointments.find((item) => item.status !== "cancelled") || null;
-  const historyAppointments = latestAppointment
-    ? appointments.filter((item) => item.id !== latestAppointment.id)
-    : appointments;
+  const latestAppointment = appointments[0] || null;
+  const historyAppointments = appointments.slice(1);
   const [appointmentTab, setAppointmentTab] = useState("latest");
   const hasBookingBasics =
     !!selectedProject && !!selectedInstitution && !!selectedTime;
-
-  const getAppointmentStatusMeta = (status) => {
-    if (status === "accepted") {
-      return {
-        label: "成功",
-        className: `${appointmentStatusBadgeBase} bg-emerald-50 text-emerald-700 border border-emerald-200`,
-      };
-    }
-    if (status === "rejected") {
-      return {
-        label: "失败",
-        className: `${appointmentStatusBadgeBase} bg-rose-50 text-rose-700 border border-rose-200`,
-      };
-    }
-    if (status === "cancelled") {
-      return {
-        label: "已取消",
-        className: `${appointmentStatusBadgeBase} bg-slate-100 text-slate-700 border border-slate-200`,
-      };
-    }
-    return {
-      label: "待确认",
-      className: `${appointmentStatusBadgeBase} bg-amber-50 text-amber-700 border border-amber-200`,
-    };
-  };
-
-  const formatAppointmentArrivalWindow = (timeLabel) => {
-    if (!timeLabel) return "";
-
-    const nowYear = now.getFullYear();
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const dayAfterTomorrow = new Date(today);
-    dayAfterTomorrow.setDate(today.getDate() + 2);
-
-    let appointmentDate = null;
-
-    const relativeMatch = timeLabel.match(
-      /^(今天|明天|后天)\s+\d{2}\/\d{2}\s+周.\s+(\d{2}:\d{2})$/
-    );
-    if (relativeMatch) {
-      const [, dayLabel, slot] = relativeMatch;
-      appointmentDate =
-        dayLabel === "今天"
-          ? new Date(today)
-          : dayLabel === "明天"
-          ? new Date(tomorrow)
-          : new Date(dayAfterTomorrow);
-      const [hours, minutes] = slot.split(":").map(Number);
-      appointmentDate.setHours(hours, minutes, 0, 0);
-    }
-
-    const absoluteMatch = timeLabel.match(/^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}:\d{2})$/);
-    if (!appointmentDate && absoluteMatch) {
-      const [, year, month, day, slot] = absoluteMatch;
-      const [hours, minutes] = slot.split(":").map(Number);
-      appointmentDate = new Date(
-        Number(year),
-        Number(month) - 1,
-        Number(day),
-        hours,
-        minutes,
-        0,
-        0
-      );
-    }
-
-    if (!appointmentDate || Number.isNaN(appointmentDate.getTime())) return "";
-
-    const from = new Date(appointmentDate.getTime() - 15 * 60 * 1000);
-    const to = new Date(appointmentDate.getTime() + 15 * 60 * 1000);
-    const pad = (value) => String(value).padStart(2, "0");
-    const formatClock = (date) => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    const formatDate = (date) =>
-      `${date.getFullYear() === nowYear ? "" : `${date.getFullYear()}/`}${pad(
-        date.getMonth() + 1
-      )}/${pad(date.getDate())}`;
-
-    const fromDateLabel = formatDate(from);
-    const toDateLabel = formatDate(to);
-    const datePrefix = fromDateLabel === toDateLabel ? `${fromDateLabel} ` : `${fromDateLabel} - ${toDateLabel} `;
-
-    return `请在 ${datePrefix}${formatClock(from)} - ${formatClock(to)} 到达`;
-  };
 
   const buildAppointmentRecord = () => {
     if (!selectedInstitutionInfo || !selectedProjectInfo) return null;
@@ -1826,11 +1592,7 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="调理"
-        subtitle="项目、机构、授权与预约"
-        onBellClick={onOpenMessages}
-      />
+      <MiniTopBar title="调理" subtitle="项目、机构、授权与预约" />
       <div className="p-4 space-y-4">
         <IntroCard
           title="项目 ➡️ 机构 ➡️ 授权"
@@ -1960,11 +1722,6 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
               <div>
                 {latestAppointment ? (
                   <div className="rounded-2xl border bg-white p-4">
-                    {(() => {
-                      const statusMeta = getAppointmentStatusMeta(
-                        latestAppointment.status
-                      );
-                      return (
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium">
@@ -1974,27 +1731,27 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
                           {latestAppointment.project}
                         </div>
                       </div>
-                      <Badge variant="secondary" className={statusMeta.className}>
-                        {statusMeta.label}
+                      <Badge
+                        variant="secondary"
+                        className={
+                          latestAppointment.status === "accepted"
+                            ? badgeDoneClass
+                            : latestAppointment.status === "cancelled"
+                            ? badgeIdleClass
+                            : badgePendingClass
+                        }
+                      >
+                        {latestAppointment.status === "accepted"
+                          ? "已接单"
+                          : latestAppointment.status === "cancelled"
+                          ? "已取消"
+                          : "待确认"}
                       </Badge>
                     </div>
-                      );
-                    })()}
                     <div className="text-xs text-muted-foreground mt-3">
                       预约时间：{latestAppointment.time}
                     </div>
-                    {formatAppointmentArrivalWindow(latestAppointment.time) ? (
-                      <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-5 text-amber-800">
-                        {formatAppointmentArrivalWindow(latestAppointment.time)}
-                      </div>
-                    ) : null}
-                    {latestAppointment.status === "rejected" &&
-                    latestAppointment.rejectReason ? (
-                      <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] leading-5 text-rose-700">
-                        拒绝理由：{latestAppointment.rejectReason}
-                      </div>
-                    ) : null}
-                    {latestAppointment.status !== "cancelled" && (
+                    {latestAppointment.status === "pending" && (
                       <Button
                         variant="outline"
                         className="w-full rounded-2xl mt-3"
@@ -2022,9 +1779,6 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
                       key={item.id}
                       className="rounded-2xl border bg-white p-4"
                     >
-                      {(() => {
-                        const statusMeta = getAppointmentStatusMeta(item.status);
-                        return (
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium">
@@ -2034,20 +1788,26 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
                             {item.project}
                           </div>
                         </div>
-                        <Badge variant="secondary" className={statusMeta.className}>
-                          {statusMeta.label}
+                        <Badge
+                          variant="secondary"
+                          className={
+                            item.status === "accepted"
+                              ? badgeDoneClass
+                              : item.status === "cancelled"
+                              ? badgeIdleClass
+                              : badgePendingClass
+                          }
+                        >
+                          {item.status === "accepted"
+                            ? "已接单"
+                            : item.status === "cancelled"
+                            ? "已取消"
+                            : "待确认"}
                         </Badge>
                       </div>
-                        );
-                      })()}
                       <div className="text-xs text-muted-foreground mt-3">
                         预约时间：{item.time}
                       </div>
-                      {item.status === "rejected" && item.rejectReason ? (
-                        <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-[12px] leading-5 text-rose-700">
-                          拒绝理由：{item.rejectReason}
-                        </div>
-                      ) : null}
                     </div>
                   ))
                 ) : (
@@ -2277,120 +2037,46 @@ function TherapyScreen({ prefill, clearPrefill, onOpenMessages }) {
   );
 }
 
-function RecordScreen({ onOpenMessages }) {
+function RecordScreen() {
   const recordTabs = [
     ["all", "全部"],
+    ["consult", "健康问卷"],
     ["plan", "方案"],
     ["therapy", "调理"],
   ];
   const [activeTab, setActiveTab] = useState("all");
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [showTonguePreview, setShowTonguePreview] = useState(false);
 
   const timelineItems = [
     {
       id: "r1",
-      type: "plan",
+      type: "consult",
       date: "2026/04/15",
-      title: "本次辨证方案",
-      desc: "辩证方案基于健康问卷、舌象与手指医生数据生成",
-      tags: ["睡眠", "脾胃", "情绪"],
+      title: "本次健康问卷记录",
+      desc: "主诉、现病史、八纲与舌象已完成采集",
+      tags: ["健康问卷", "舌象"],
       result: "肝郁脾虚、湿困中焦",
       detail: {
-        syndromeResult: {
-          title: "肝郁脾虚、湿困中焦",
-          summary: "以睡眠浅、胃胀、疲劳感重为主要表现",
-          detail:
-            "综合本次健康问卷信息与舌象特征，判断当前以肝郁脾虚为主，兼有湿困中焦。长期情绪压力导致气机不畅，影响脾胃运化功能，进而出现胃胀、疲劳、睡眠质量下降等表现。建议以疏肝理气、健脾祛湿为主要调理方向，并结合外治疗法与日常功法进行综合干预。",
-          tags: ["睡眠", "脾胃", "情绪"],
-        },
-        syndromeScores: [
-          ["睡眠", "2/5"],
-          ["脾胃", "3/5"],
-          ["情绪", "2/5"],
-        ],
-        diagnosisDataSections: [
-          {
-            key: "questionnaire",
-            title: "健康问卷数据",
-            desc: "来自本次主诉与问卷调查",
-            rows: [
-              ["主诉", "胃胀、睡眠浅、易疲劳"],
-              ["现病史", "近两周工作压力增大后加重，伴随入睡困难与白天乏力"],
-              ["恶寒情况", "恶寒轻微"],
-              ["发热情况", "无发热"],
-              ["寒热关系", "但恶寒不发热"],
-            ],
-          },
-          {
-            key: "tongue",
-            title: "舌象与体征",
-            desc: "来自舌象图像识别",
-            rows: [["舌象提示", "舌苔偏腻，舌质略淡"]],
-          },
-          {
-            key: "finger-doctor",
-            title: "手指医生数据",
-            desc: "来自设备同步结果",
-            rows: [
-              ["同步状态", "已同步最新检测数据"],
-              ["最近同步", "2026/04/14 10:32"],
-              ["数据来源", "手指医生设备"],
-            ],
-          },
-        ],
-        planSections: [
-          ["内服", "健脾祛湿方（参考）"],
-          ["外治", "助眠舒缓调理"],
-          ["功法", "八段锦 · 第1式"],
+        sections: [
+          ["主诉", "胃胀、睡眠浅、易疲劳"],
+          ["现病史", "近两周工作压力增大后加重，伴随入睡困难与白天乏力"],
+          ["辨证结果", "肝郁脾虚、湿困中焦"],
         ],
       },
     },
     {
       id: "r2",
       type: "plan",
-      date: "2026/04/08",
-      title: "历史辨证方案",
-      desc: "已包含基础问卷与历史舌象数据",
-      tags: ["睡眠", "脾胃"],
-      result: "脾胃湿困",
+      date: "2026/04/15",
+      title: "本次调理方案",
+      desc: "内服、外治、功法三类方案已生成",
+      tags: ["方案"],
+      result: "健脾祛湿方 / 助眠舒缓调理 / 八段锦第1式",
       detail: {
-        syndromeResult: {
-          title: "脾胃湿困",
-          summary: "以睡眠浅、疲劳感重、纳差为主要表现",
-          detail:
-            "结合当次健康问卷与舌象信息，判断以脾胃湿困为主。饮食不规律与长期疲劳影响脾胃运化，进而出现困倦、胃口一般与睡眠不实等表现。建议以健脾和中、轻化湿滞为主要调理方向。",
-          tags: ["睡眠", "脾胃"],
-        },
-        syndromeScores: [
-          ["睡眠", "2/5"],
-          ["脾胃", "4/5"],
-          ["情绪", "1/5"],
-        ],
-        diagnosisDataSections: [
-          {
-            key: "questionnaire",
-            title: "健康问卷数据",
-            desc: "来自当次主诉与问卷调查",
-            rows: [
-              ["主诉", "睡眠浅、疲劳感重"],
-              ["现病史", "近一周劳累后睡眠变浅，白天易困乏"],
-              ["恶寒情况", "无恶寒"],
-              ["发热情况", "无发热"],
-              ["寒热关系", "恶寒发热未见明显并见"],
-            ],
-          },
-          {
-            key: "tongue",
-            title: "舌象与体征",
-            desc: "来自舌象图像识别",
-            rows: [["舌象提示", "舌体略胖，苔白稍腻"]],
-          },
-        ],
-        planSections: [
-          ["内服", "健脾和中调理方（参考）"],
-          ["外治", "脾胃舒缓调理"],
-          ["功法", "八段锦 · 调脾胃须单举"],
+        sections: [
+          ["内服", "健脾祛湿方（参考）"],
+          ["外治", "助眠舒缓调理"],
+          ["功法", "八段锦 · 第1式"],
         ],
       },
     },
@@ -2410,6 +2096,22 @@ function RecordScreen({ onOpenMessages }) {
         ],
       },
     },
+    {
+      id: "r4",
+      type: "consult",
+      date: "2026/04/08",
+      title: "历史健康问卷记录",
+      desc: "睡眠浅、疲劳感重，完成基础健康问卷",
+      tags: ["健康问卷"],
+      result: "脾胃湿困",
+      detail: {
+        sections: [
+          ["主诉", "睡眠浅、疲劳感重"],
+          ["辨证结果", "脾胃湿困"],
+          ["处理建议", "继续调理脾胃与睡眠"],
+        ],
+      },
+    },
   ];
 
   const filteredItems =
@@ -2417,271 +2119,9 @@ function RecordScreen({ onOpenMessages }) {
       ? timelineItems
       : timelineItems.filter((item) => item.type === activeTab);
 
-  if (selectedRecord) {
-    return (
-      <div className="bg-slate-50 min-h-full pb-24">
-        <MiniTopBar
-          title={selectedRecord.type === "plan" ? "方案详情" : "记录详情"}
-          subtitle={selectedRecord.date}
-          onBellClick={onOpenMessages}
-        />
-        <div className="p-4 space-y-4">
-          <button
-            type="button"
-            onClick={() => setSelectedRecord(null)}
-            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] text-slate-600"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            返回档案
-          </button>
-
-          <div>
-            <div className="text-base font-semibold">{selectedRecord.title}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {selectedRecord.date}
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-slate-50 border p-4 text-sm leading-6">
-            {selectedRecord.desc}
-          </div>
-
-          {selectedRecord.type === "plan" ? (
-            <>
-              <Card className={sectionCard}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">本次辨证结果</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <div className="text-base font-semibold text-slate-900">
-                      {selectedRecord.detail.syndromeResult.title}
-                    </div>
-                    <div className="mt-2 text-sm text-slate-700">
-                      {selectedRecord.detail.syndromeResult.summary}
-                    </div>
-                    <div className="mt-3 text-[12px] leading-6 text-slate-600">
-                      {selectedRecord.detail.syndromeResult.detail}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-xs">
-                    {selectedRecord.detail.syndromeScores.map(([label, value]) => (
-                      <div
-                        key={label}
-                        className="rounded-2xl border border-slate-200 bg-white p-3 text-center"
-                      >
-                        <div className="text-slate-500">{label}</div>
-                        <div className="mt-1 text-sm font-semibold text-slate-900">
-                          {value}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRecord.detail.syndromeResult.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className={badgeIdleClass}
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={sectionCard}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">参与辨证的数据</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {selectedRecord.detail.diagnosisDataSections.map((section) => (
-                    <div
-                      key={section.key}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-medium text-slate-900">
-                            {section.title}
-                          </div>
-                          <div className="mt-1 text-[12px] text-slate-500">
-                            {section.desc}
-                          </div>
-                        </div>
-                        <Badge variant="secondary" className={badgeIdleClass}>
-                          {section.rows.length}项
-                        </Badge>
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        {section.rows.map(([label, value]) => (
-                          <div
-                            key={label}
-                            className="rounded-xl bg-slate-50 px-3 py-2.5"
-                          >
-                            <div className="text-[11px] text-slate-500">
-                              {label}
-                            </div>
-                            <div className="mt-1 text-[13px] leading-5 text-slate-800">
-                              {value}
-                            </div>
-                          </div>
-                        ))}
-                        {section.key === "tongue" ? (
-                          <button
-                            type="button"
-                            onClick={() => setShowTonguePreview(true)}
-                            className="block w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 text-left"
-                          >
-                            <div className="flex items-center justify-between px-3 pt-3">
-                              <div className="text-[11px] text-slate-500">
-                                舌象图像
-                              </div>
-                              <div className="text-[11px] text-slate-500">
-                                点击放大
-                              </div>
-                            </div>
-                            <div className="p-3">
-                              <img
-                                alt="舌象图片缩略图"
-                                className="h-36 w-full rounded-xl object-cover"
-                                src={`data:image/svg+xml;utf8,${encodeURIComponent(`
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220">
-                                    <defs>
-                                      <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-                                        <stop offset="0%" stop-color="#f8d7da"/>
-                                        <stop offset="100%" stop-color="#f2b8be"/>
-                                      </linearGradient>
-                                      <linearGradient id="tongue" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stop-color="#f08e96"/>
-                                        <stop offset="100%" stop-color="#de6d78"/>
-                                      </linearGradient>
-                                    </defs>
-                                    <rect width="320" height="220" rx="28" fill="url(#bg)"/>
-                                    <ellipse cx="160" cy="110" rx="82" ry="96" fill="url(#tongue)"/>
-                                    <ellipse cx="160" cy="106" rx="58" ry="70" fill="#f6cfd2" opacity="0.6"/>
-                                    <path d="M160 42 C148 84 148 136 160 182 C172 136 172 84 160 42" fill="none" stroke="#d06b75" stroke-width="5" stroke-linecap="round"/>
-                                    <g fill="#f7e6c8" opacity="0.85">
-                                      <ellipse cx="126" cy="88" rx="20" ry="12"/>
-                                      <ellipse cx="172" cy="76" rx="24" ry="14"/>
-                                      <ellipse cx="192" cy="118" rx="20" ry="12"/>
-                                      <ellipse cx="142" cy="132" rx="24" ry="14"/>
-                                    </g>
-                                  </svg>
-                                `)}`}
-                              />
-                            </div>
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className={sectionCard}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">本次调理方案</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {selectedRecord.detail.planSections.map(([label, value]) => (
-                    <div
-                      key={label}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
-                    >
-                      <div className="text-xs text-slate-500">{label}</div>
-                      <div className="mt-2 text-sm font-medium text-slate-900">
-                        {value}
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </>
-          ) : (
-            <div className="space-y-3">
-              {selectedRecord.detail?.sections?.map(([label, value]) => (
-                <div key={label} className="rounded-2xl border bg-white p-4">
-                  <div className="text-xs text-muted-foreground">{label}</div>
-                  <div className="text-sm text-slate-800 mt-2 leading-6">
-                    {value}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {showTonguePreview ? (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4"
-            onClick={() => setShowTonguePreview(false)}
-          >
-            <div
-              className="w-full max-w-[360px] rounded-[28px] bg-white p-4 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium text-slate-900">
-                    舌象图像
-                  </div>
-                  <div className="mt-1 text-[12px] text-slate-500">
-                    点击空白区域可关闭预览
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowTonguePreview(false)}
-                  className="rounded-full border border-slate-200 px-3 py-1 text-[12px] text-slate-600"
-                >
-                  关闭
-                </button>
-              </div>
-              <img
-                alt="舌象图片预览"
-                className="mt-4 w-full rounded-2xl object-cover"
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(`
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 880">
-                    <defs>
-                      <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#f9dde0"/>
-                        <stop offset="100%" stop-color="#f4bcc3"/>
-                      </linearGradient>
-                      <linearGradient id="tongue" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#ef8f98"/>
-                        <stop offset="100%" stop-color="#d96b76"/>
-                      </linearGradient>
-                    </defs>
-                    <rect width="640" height="880" rx="56" fill="url(#bg)"/>
-                    <ellipse cx="320" cy="430" rx="160" ry="280" fill="url(#tongue)"/>
-                    <ellipse cx="320" cy="410" rx="116" ry="220" fill="#f5d3d6" opacity="0.58"/>
-                    <path d="M320 174 C296 310 296 548 320 710 C344 548 344 310 320 174" fill="none" stroke="#d06b75" stroke-width="10" stroke-linecap="round"/>
-                    <g fill="#f6e6c9" opacity="0.9">
-                      <ellipse cx="254" cy="312" rx="42" ry="24"/>
-                      <ellipse cx="368" cy="284" rx="54" ry="30"/>
-                      <ellipse cx="410" cy="418" rx="44" ry="24"/>
-                      <ellipse cx="274" cy="470" rx="56" ry="28"/>
-                      <ellipse cx="344" cy="548" rx="46" ry="24"/>
-                    </g>
-                  </svg>
-                `)}`}
-              />
-            </div>
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="档案"
-        subtitle="健康记录与历史轨迹"
-        onBellClick={onOpenMessages}
-      />
+      <MiniTopBar title="档案" subtitle="健康记录与历史轨迹" />
       <div className="p-4 space-y-4">
         <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-slate-50 to-slate-100">
           <CardContent className="p-5">
@@ -2700,7 +2140,7 @@ function RecordScreen({ onOpenMessages }) {
               <div className="rounded-2xl border bg-white p-3">
                 <div className="text-lg font-semibold">3</div>
                 <div className="text-[11px] text-muted-foreground mt-1">
-                  累计辨证记录
+                  累计健康问卷
                 </div>
               </div>
               <div className="rounded-2xl border bg-white p-3">
@@ -2719,7 +2159,7 @@ function RecordScreen({ onOpenMessages }) {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
+        <div className="grid grid-cols-4 gap-2 rounded-2xl bg-slate-100 p-1 text-[12px]">
           {recordTabs.map(([key, label]) => (
             <button
               key={key}
@@ -2752,7 +2192,9 @@ function RecordScreen({ onOpenMessages }) {
                     </div>
                   </div>
                   <Badge variant="secondary" className={badgeIdleClass}>
-                    {item.type === "plan"
+                    {item.type === "consult"
+                      ? "健康问卷"
+                      : item.type === "plan"
                       ? "方案"
                       : "调理"}
                   </Badge>
@@ -2778,21 +2220,74 @@ function RecordScreen({ onOpenMessages }) {
             ))}
           </CardContent>
         </Card>
+
+        {selectedRecord && (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/30"
+              onClick={() => setSelectedRecord(null)}
+            />
+            <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white shadow-2xl max-h-[75vh] overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <button
+                  type="button"
+                  className="text-sm text-slate-500"
+                  onClick={() => setSelectedRecord(null)}
+                >
+                  关闭
+                </button>
+                <div className="text-sm font-medium">记录详情</div>
+                <div className="w-8" />
+              </div>
+              <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(75vh-64px)]">
+                <div>
+                  <div className="text-base font-semibold">
+                    {selectedRecord.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {selectedRecord.date}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 border p-4 text-sm leading-6">
+                  {selectedRecord.desc}
+                </div>
+                <div className="space-y-3">
+                  {selectedRecord.detail?.sections?.map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="rounded-2xl border bg-white p-4"
+                    >
+                      <div className="text-xs text-muted-foreground">
+                        {label}
+                      </div>
+                      <div className="text-sm text-slate-800 mt-2 leading-6">
+                        {value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function MeScreen({ onNavigate, onOpenMessages }) {
-  const settingsEntries = ["联系客服", "使用说明", "用户协议"];
+function MeScreen({ onNavigate }) {
+  const quickEntries = [
+    ["我的档案", "查看健康记录", "record"],
+    ["我的预约", "调理预约与到店", "therapy"],
+    ["授权管理", "查看已授权机构", "therapy"],
+    ["我的订单", "商城与服务订单", "me"],
+  ];
+
+  const settingsEntries = ["账号设置", "消息通知", "联系客服", "用户协议"];
 
   return (
     <div className="bg-slate-50 min-h-full pb-24">
-      <MiniTopBar
-        title="我的"
-        subtitle="账户与会员权益"
-        onBellClick={onOpenMessages}
-      />
+      <MiniTopBar title="我的" subtitle="账户、权益与常用入口" />
       <div className="p-4 space-y-4">
         <Card className="rounded-3xl border-0 shadow-sm bg-gradient-to-br from-slate-50 to-slate-100">
           <CardContent className="p-5">
@@ -2842,13 +2337,35 @@ function MeScreen({ onNavigate, onOpenMessages }) {
 
         <Card className={sectionCard}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">帮助与说明</CardTitle>
+            <CardTitle className="text-base">常用入口</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {quickEntries.map(([title, desc, target]) => (
+                <button
+                  key={title}
+                  onClick={() => onNavigate?.(target)}
+                  className="rounded-2xl border bg-white p-4 text-left"
+                >
+                  <div className="text-sm font-medium">{title}</div>
+                  <div className="text-[11px] text-muted-foreground mt-2">
+                    {desc}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={sectionCard}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">设置与帮助</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {settingsEntries.map((item) => (
               <button
                 key={item}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm text-slate-700 flex items-center justify-between"
+                className="w-full rounded-2xl border bg-white px-4 py-3 text-left text-sm flex items-center justify-between"
               >
                 <span>{item}</span>
                 <span className="text-slate-400">›</span>
@@ -2863,7 +2380,6 @@ function MeScreen({ onNavigate, onOpenMessages }) {
 
 function MiniProgramPrototype() {
   const [tab, setTab] = useState("consult");
-  const [overlayPage, setOverlayPage] = useState(null);
   const [therapyPrefill, setTherapyPrefill] = useState(null);
 
   const goToTherapyWithProject = (projectId) => {
@@ -2872,74 +2388,61 @@ function MiniProgramPrototype() {
   };
 
   const clearTherapyPrefill = () => setTherapyPrefill(null);
-  const openMessages = () => setOverlayPage("messages");
-  const closeOverlayPage = () => setOverlayPage(null);
 
   const screen = useMemo(() => {
-    if (overlayPage === "messages") {
-      return <MessageScreen onBack={closeOverlayPage} />;
-    }
     switch (tab) {
       case "plan":
-        return (
-          <PlanScreen
-            goToTherapyWithProject={goToTherapyWithProject}
-            onOpenMessages={openMessages}
-          />
-        );
+        return <PlanScreen goToTherapyWithProject={goToTherapyWithProject} />;
       case "therapy":
         return (
           <TherapyScreen
             prefill={therapyPrefill}
             clearPrefill={clearTherapyPrefill}
-            onOpenMessages={openMessages}
           />
         );
       case "record":
-        return <RecordScreen onOpenMessages={openMessages} />;
+        return <RecordScreen />;
       case "me":
-        return <MeScreen onNavigate={setTab} onOpenMessages={openMessages} />;
+        return <MeScreen onNavigate={setTab} />;
       default:
-        return <ConsultScreen onOpenMessages={openMessages} />;
+        return <ConsultScreen />;
     }
-  }, [overlayPage, tab, therapyPrefill]);
+  }, [tab, therapyPrefill]);
 
   return (
     <div className={phoneFrame}>
       <div className="flex h-full min-h-0 flex-col bg-white">
         <ScrollArea className="min-h-0 flex-1">{screen}</ScrollArea>
-        {!overlayPage ? (
-          <div className="shrink-0 border-t bg-white px-2 py-2">
-            <div className="grid grid-cols-5 gap-1">
-              {appTabs.map((item) => {
-                const Icon = item.icon;
-                const active = tab === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setTab(item.key)}
-                    className={`rounded-2xl px-2 py-2 text-center transition ${
-                      active ? "bg-slate-100" : ""
+        <div className="shrink-0 border-t bg-white px-2 py-2">
+          <div className="grid grid-cols-5 gap-1">
+            {appTabs.map((item) => {
+              const Icon = item.icon;
+              const active = tab === item.key;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setTab(item.key)}
+                  className={`rounded-2xl px-2 py-2 text-center transition ${
+                    active ? "bg-slate-100" : ""
+                  }`}
+                >
+                  <Icon
+                    className={`mx-auto h-5 w-5 ${
+                      active ? "opacity-100" : "opacity-50"
+                    }`}
+                  />
+                  <div
+                    className={`mt-1 text-[11px] ${
+                      active ? "font-medium" : "text-muted-foreground"
                     }`}
                   >
-                    <Icon
-                      className={`mx-auto h-5 w-5 ${
-                        active ? "opacity-100" : "opacity-50"
-                      }`}
-                    />
-                    <div
-                      className={`mt-1 text-[11px] ${
-                        active ? "font-medium" : "text-muted-foreground"
-                      }`}
-                    >
-                      {item.label}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    {item.label}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        ) : null}
+        </div>
       </div>
     </div>
   );
